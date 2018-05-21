@@ -6,24 +6,71 @@ import (
 	"fmt"
 )
 
+const data_stack_max_size = 20
+
 type DataPackage struct {
-	data 	map[string]interface{}
+	dataMap		map[string]interface{}
+
+	dataStack	[]interface{}
+	pos 		int8
 }
 
 func NewDataPackage(data interface{}) *DataPackage {
 	if v, ok := data.(map[string]interface{}); ok {
-		return &DataPackage{data: v}
+		dp := &DataPackage{
+			dataMap: v,
+			dataStack: make([]interface{}, data_stack_max_size),
+			pos: 0,
+		}
+
+        dp.dataStack[0] = &dp.dataMap
+        return dp
 	}
 
 	return nil
 }
 
+func (dp *DataPackage) Pre() {
+	if dp.pos == 0 {
+		throwException(ERR_STATUS_DATA_STACK, "数据栈错误")
+	}
+
+	dp.pos--
+}
+
+func (dp *DataPackage) Next(name string) {
+	d := dp.GetAttr(name)
+
+	fmt.Printf("%T, %+v\n", d, d)
+
+	v, _ := d.([]map[string]interface{})
+	dp.pos++
+	dp.dataStack[dp.pos] = &(v[0])
+
+	//switch reflect.ValueOf(d).Kind() {
+	//case reflect.Slice, reflect.Array:
+	//	dp.pos++
+	//	dp.dataStack[dp.pos] = &d
+	//}
+}
+
 func (dp DataPackage) GetAttr(name string) interface{} {
-	if v, ok := dp.data[name]; ok {
+	v := dp.dataStack[dp.pos]
+
+	switch v.(type) {
+	case *map[string]interface{}:
+		return getAttr(name, v.(*map[string]interface{}))
+	}
+
+	return nil
+}
+
+func getAttr(name string, data *map[string]interface{}) interface{} {
+	if v, ok := (*data)[name]; ok {
 		return v
 	}
 
-	throw_exception("无属性值：%s", name)
+	throwException(ERR_STATUS_NO_ATTR, "无属性值：%s", name)
 	return nil
 }
 
@@ -69,7 +116,7 @@ func ConvertBool(v interface{}) bool {
 		return w.Len() > 0
 	}
 
-	throw_exception("不支持 %v 转换为 bool", v)
+	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 bool", v)
 	return false
 }
 
@@ -91,7 +138,7 @@ func ConvertInt(v interface{}) int64 {
 		}
 	}
 
-	throw_exception("不支持 %v 转换为 int64", v)
+	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 int64", v)
 	return 0
 }
 
@@ -111,7 +158,7 @@ func ConvertFloat(v interface{}) float64 {
 		}
 	}
 
-	throw_exception("不支持 %v 转换为 float64", v)
+	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 float64", v)
 	return 0
 }
 
@@ -123,7 +170,7 @@ func ConvertString(v interface{}) string {
 		return v.(string)
 	}
 
-	throw_exception("不支持 %v 转换为 float64", v)
+	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 string", v)
 	return ""
 }
 

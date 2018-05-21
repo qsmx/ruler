@@ -1,0 +1,113 @@
+state 0 //
+
+    0 $accept: . Input
+    1 Input: .  [$end]
+
+    $end    reduce using rule 1 (Input)
+    ARRAYS  shift, and goto state 7
+    FLOAT   shift, and goto state 4
+    IDENT   shift, and goto state 6
+    INT     shift, and goto state 3
+    STRING  shift, and goto state 5
+
+    Expr        goto state 2
+    Filter      goto state 8
+    FilterData  goto state 9
+    Input       goto state 1
+
+state 1 // [$end]
+
+    0 $accept: Input .  [$end]
+
+    $end  accept
+
+state 2 // ARRAYS [$end]
+
+    2 Input: Expr .  [$end]
+
+    $end  reduce using rule 2 (Input)
+
+state 3 // INT
+
+    3 Expr: INT .  [$end]
+
+    $end  reduce using rule 3 (Expr)
+
+state 4 // FLOAT
+
+    4 Expr: FLOAT .  [$end]
+
+    $end  reduce using rule 4 (Expr)
+
+state 5 // STRING
+
+    5 Expr: STRING .  [$end]
+
+    $end  reduce using rule 5 (Expr)
+
+state 6 // IDENT
+
+    6 Expr: IDENT .  [$end]
+   11 FilterData: IDENT .  ['[']
+
+    $end  reduce using rule 6 (Expr)
+    '['   reduce using rule 11 (FilterData)
+
+state 7 // ARRAYS
+
+    7 Expr: ARRAYS .  [$end]
+   12 FilterData: ARRAYS .  ['[']
+
+    $end  reduce using rule 7 (Expr)
+    '['   reduce using rule 12 (FilterData)
+
+state 8 // ARRAYS '[' IDENT NEQ INT ']' [$end]
+
+    8 Expr: Filter .  [$end]
+
+    $end  reduce using rule 8 (Expr)
+
+state 9 // ARRAYS ['[']
+
+    9 Filter: FilterData . '[' Condition ']'
+
+    '['  shift, and goto state 10
+
+state 10 // ARRAYS '['
+
+    9 Filter: FilterData '[' . Condition ']'
+
+    IDENT  shift, and goto state 12
+
+    Condition  goto state 11
+
+state 11 // ARRAYS '[' IDENT NEQ INT [']']
+
+    9 Filter: FilterData '[' Condition . ']'
+
+    ']'  shift, and goto state 15
+
+state 12 // ARRAYS '[' IDENT
+
+   10 Condition: IDENT . NEQ INT
+
+    NEQ  shift, and goto state 13
+
+state 13 // ARRAYS '[' IDENT NEQ
+
+   10 Condition: IDENT NEQ . INT
+
+    INT  shift, and goto state 14
+
+state 14 // ARRAYS '[' IDENT NEQ INT
+
+   10 Condition: IDENT NEQ INT .  [']']
+
+    ']'  reduce using rule 10 (Condition)
+
+state 15 // ARRAYS '[' IDENT NEQ INT ']'
+
+    9 Filter: FilterData '[' Condition ']' .  [$end]
+
+    $end  reduce using rule 9 (Filter)
+
