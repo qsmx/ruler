@@ -14,7 +14,9 @@ else
 SED 	:= sed -i
 endif
 
-all: grammar.go tokenizer.go
+all: filter.go hit.go tokenizer.go validate.go
+	@$(SED) -n "/^func filterParse/,/^}/p" filter.go
+	@$(SED) -n "/^func validateParse/,/^}/p" validate.go
 
 test: all
 	go test
@@ -22,11 +24,14 @@ test: all
 %.go: %.l
 	$(LEX) -o $@ $<
 
-grammar.go: grammar.y
-	$(YACC) -p $(PREFIX) -o $@ $<
-	$(SED) '/func $(PREFIX)Parse/s/)/, dp *DataPackage, res *bool&/' $@
+%.go: %.y
+	@cat yacc.spec.in $< > $<.tmp
+	$(YACC) -p $(basename $@) -o $@ $<.tmp
+	@rm $<.tmp
+ifneq ($@,validate.go)
+	@$(SED) '/func $(basename $@)Parse/s/)/, dp *DataPackage, res *bool&/' $@
+endif
 
 clean:
 	go clean
-	rm -f grammar.go tokenizer.go
-
+	rm -f filter.go tokenizer.go hit.go validate.go

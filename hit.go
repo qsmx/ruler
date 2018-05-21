@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type rulerSymType struct {
+type hitSymType struct {
 	yys   int
 	value interface{}
 
@@ -19,40 +19,40 @@ type rulerSymType struct {
 	value_slice  []interface{}
 }
 
-type rulerXError struct {
+type hitXError struct {
 	state, xsym int
 }
 
 const (
-	rulerDefault = 57365
-	rulerEofCode = 57344
-	AND          = 57360
-	ARRAYS       = 57352
-	EQU          = 57354
-	FALSE        = 57349
-	FILTER       = 57353
-	FLOAT        = 57347
-	GEQ          = 57359
-	GTR          = 57358
-	IDENT        = 57351
-	IN           = 57362
-	INT          = 57346
-	LEQ          = 57357
-	LSS          = 57356
-	NEG          = 57364
-	NEQ          = 57355
-	NOTIN        = 57363
-	OR           = 57361
-	STRING       = 57350
-	TRUE         = 57348
-	rulerErrCode = 57345
+	hitDefault = 57365
+	hitEofCode = 57344
+	AND        = 57360
+	ARRAYS     = 57352
+	EQU        = 57354
+	FALSE      = 57349
+	FILTER     = 57353
+	FLOAT      = 57347
+	GEQ        = 57359
+	GTR        = 57358
+	IDENT      = 57351
+	IN         = 57362
+	INT        = 57346
+	LEQ        = 57357
+	LSS        = 57356
+	NEG        = 57364
+	NEQ        = 57355
+	NOTIN      = 57363
+	OR         = 57361
+	STRING     = 57350
+	TRUE       = 57348
+	hitErrCode = 57345
 
-	rulerMaxDepth = 200
-	rulerTabOfs   = -13
+	hitMaxDepth = 200
+	hitTabOfs   = -13
 )
 
 var (
-	rulerPrec = map[int]int{
+	hitPrec = map[int]int{
 		OR:  0,
 		AND: 1,
 		EQU: 2,
@@ -69,7 +69,7 @@ var (
 		'^': 7,
 	}
 
-	rulerXLAT = map[int]int{
+	hitXLAT = map[int]int{
 		57344: 0,  // $end (10x)
 		91:    1,  // '[' (3x)
 		93:    2,  // ']' (2x)
@@ -106,7 +106,7 @@ var (
 		57348: 33, // TRUE (0x)
 	}
 
-	rulerSymNames = []string{
+	hitSymNames = []string{
 		"$end",
 		"'['",
 		"']'",
@@ -143,9 +143,9 @@ var (
 		"TRUE",
 	}
 
-	rulerTokenLiteralStrings = map[int]string{}
+	hitTokenLiteralStrings = map[int]string{}
 
-	rulerReductions = map[int]struct{ xsym, components int }{
+	hitReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
 		1:  {11, 0},
 		2:  {11, 1},
@@ -161,9 +161,9 @@ var (
 		12: {9, 1},
 	}
 
-	rulerXErrors = map[rulerXError]string{}
+	hitXErrors = map[hitXError]string{}
 
-	rulerParseTab = [16][]uint8{
+	hitParseTab = [16][]uint8{
 		// 0
 		{12, 3: 19, 16, 20, 7: 15, 21, 22, 17, 14, 13: 18},
 		{13},
@@ -187,22 +187,22 @@ var (
 	}
 )
 
-var rulerDebug = 0
+var hitDebug = 0
 
-type rulerLexer interface {
-	Lex(lval *rulerSymType) int
+type hitLexer interface {
+	Lex(lval *hitSymType) int
 	Error(s string)
 }
 
-type rulerLexerEx interface {
-	rulerLexer
-	Reduced(rule, state int, lval *rulerSymType) bool
+type hitLexerEx interface {
+	hitLexer
+	Reduced(rule, state int, lval *hitSymType) bool
 }
 
-func rulerSymName(c int) (s string) {
-	x, ok := rulerXLAT[c]
+func hitSymName(c int) (s string) {
+	x, ok := hitXLAT[c]
 	if ok {
-		return rulerSymNames[x]
+		return hitSymNames[x]
 	}
 
 	if c < 0x7f {
@@ -212,30 +212,30 @@ func rulerSymName(c int) (s string) {
 	return __yyfmt__.Sprintf("%d", c)
 }
 
-func rulerlex1(yylex rulerLexer, lval *rulerSymType) (n int) {
+func hitlex1(yylex hitLexer, lval *hitSymType) (n int) {
 	n = yylex.Lex(lval)
 	if n <= 0 {
-		n = rulerEofCode
+		n = hitEofCode
 	}
-	if rulerDebug >= 3 {
-		__yyfmt__.Printf("\nlex %s(%#x %d), lval: %+v\n", rulerSymName(n), n, n, lval)
+	if hitDebug >= 3 {
+		__yyfmt__.Printf("\nlex %s(%#x %d), lval: %+v\n", hitSymName(n), n, n, lval)
 	}
 	return n
 }
 
-func rulerParse(yylex rulerLexer, dp *DataPackage, res *bool) int {
+func hitParse(yylex hitLexer, dp *DataPackage, res *bool) int {
 	const yyError = 22
 
-	yyEx, _ := yylex.(rulerLexerEx)
+	yyEx, _ := yylex.(hitLexerEx)
 	var yyn int
-	var yylval rulerSymType
-	var yyVAL rulerSymType
-	yyS := make([]rulerSymType, 200)
+	var yylval hitSymType
+	var yyVAL hitSymType
+	yyS := make([]hitSymType, 200)
 
 	Nerrs := 0   /* number of errors */
 	Errflag := 0 /* error recovery flag */
 	yyerrok := func() {
-		if rulerDebug >= 2 {
+		if hitDebug >= 2 {
 			__yyfmt__.Printf("yyerrok()\n")
 		}
 		Errflag = 0
@@ -258,7 +258,7 @@ yystack:
 	/* put a state and value onto the stack */
 	yyp++
 	if yyp >= len(yyS) {
-		nyys := make([]rulerSymType, len(yyS)*2)
+		nyys := make([]hitSymType, len(yyS)*2)
 		copy(nyys, yyS)
 		yyS = nyys
 	}
@@ -268,24 +268,24 @@ yystack:
 yynewstate:
 	if yychar < 0 {
 		yylval.yys = yystate
-		yychar = rulerlex1(yylex, &yylval)
+		yychar = hitlex1(yylex, &yylval)
 		var ok bool
-		if yyxchar, ok = rulerXLAT[yychar]; !ok {
-			yyxchar = len(rulerSymNames) // > tab width
+		if yyxchar, ok = hitXLAT[yychar]; !ok {
+			yyxchar = len(hitSymNames) // > tab width
 		}
 	}
-	if rulerDebug >= 4 {
+	if hitDebug >= 4 {
 		var a []int
 		for _, v := range yyS[:yyp+1] {
 			a = append(a, v.yys)
 		}
 		__yyfmt__.Printf("state stack %v\n", a)
 	}
-	row := rulerParseTab[yystate]
+	row := hitParseTab[yystate]
 	yyn = 0
 	if yyxchar < len(row) {
 		if yyn = int(row[yyxchar]); yyn != 0 {
-			yyn += rulerTabOfs
+			yyn += hitTabOfs
 		}
 	}
 	switch {
@@ -294,7 +294,7 @@ yynewstate:
 		yyVAL = yylval
 		yystate = yyn
 		yyshift = yyn
-		if rulerDebug >= 2 {
+		if hitDebug >= 2 {
 			__yyfmt__.Printf("shift, and goto state %d\n", yystate)
 		}
 		if Errflag > 0 {
@@ -303,7 +303,7 @@ yynewstate:
 		goto yystack
 	case yyn < 0: // reduce
 	case yystate == 1: // accept
-		if rulerDebug >= 2 {
+		if hitDebug >= 2 {
 			__yyfmt__.Println("accept")
 		}
 		goto ret0
@@ -313,23 +313,23 @@ yynewstate:
 		/* error ... attempt to resume parsing */
 		switch Errflag {
 		case 0: /* brand new error */
-			if rulerDebug >= 1 {
-				__yyfmt__.Printf("no action for %s in state %d\n", rulerSymName(yychar), yystate)
+			if hitDebug >= 1 {
+				__yyfmt__.Printf("no action for %s in state %d\n", hitSymName(yychar), yystate)
 			}
-			msg, ok := rulerXErrors[rulerXError{yystate, yyxchar}]
+			msg, ok := hitXErrors[hitXError{yystate, yyxchar}]
 			if !ok {
-				msg, ok = rulerXErrors[rulerXError{yystate, -1}]
+				msg, ok = hitXErrors[hitXError{yystate, -1}]
 			}
 			if !ok && yyshift != 0 {
-				msg, ok = rulerXErrors[rulerXError{yyshift, yyxchar}]
+				msg, ok = hitXErrors[hitXError{yyshift, yyxchar}]
 			}
 			if !ok {
-				msg, ok = rulerXErrors[rulerXError{yyshift, -1}]
+				msg, ok = hitXErrors[hitXError{yyshift, -1}]
 			}
 			if yychar > 0 {
-				ls := rulerTokenLiteralStrings[yychar]
+				ls := hitTokenLiteralStrings[yychar]
 				if ls == "" {
-					ls = rulerSymName(yychar)
+					ls = hitSymName(yychar)
 				}
 				if ls != "" {
 					switch {
@@ -352,11 +352,11 @@ yynewstate:
 
 			/* find a state where "error" is a legal shift action */
 			for yyp >= 0 {
-				row := rulerParseTab[yyS[yyp].yys]
+				row := hitParseTab[yyS[yyp].yys]
 				if yyError < len(row) {
-					yyn = int(row[yyError]) + rulerTabOfs
+					yyn = int(row[yyError]) + hitTabOfs
 					if yyn > 0 { // hit
-						if rulerDebug >= 2 {
+						if hitDebug >= 2 {
 							__yyfmt__.Printf("error recovery found error shift in state %d\n", yyS[yyp].yys)
 						}
 						yystate = yyn /* simulate a shift of "error" */
@@ -365,22 +365,22 @@ yynewstate:
 				}
 
 				/* the current p has no shift on "error", pop stack */
-				if rulerDebug >= 2 {
+				if hitDebug >= 2 {
 					__yyfmt__.Printf("error recovery pops state %d\n", yyS[yyp].yys)
 				}
 				yyp--
 			}
 			/* there is no state on the stack with an error shift ... abort */
-			if rulerDebug >= 2 {
+			if hitDebug >= 2 {
 				__yyfmt__.Printf("error recovery failed\n")
 			}
 			goto ret1
 
 		case 3: /* no shift yet; clobber input char */
-			if rulerDebug >= 2 {
-				__yyfmt__.Printf("error recovery discards %s\n", rulerSymName(yychar))
+			if hitDebug >= 2 {
+				__yyfmt__.Printf("error recovery discards %s\n", hitSymName(yychar))
 			}
-			if yychar == rulerEofCode {
+			if yychar == hitEofCode {
 				goto ret1
 			}
 
@@ -390,14 +390,14 @@ yynewstate:
 	}
 
 	r := -yyn
-	x0 := rulerReductions[r]
+	x0 := hitReductions[r]
 	x, n := x0.xsym, x0.components
 	yypt := yyp
 	_ = yypt // guard against "declared and not used"
 
 	yyp -= n
 	if yyp+1 >= len(yyS) {
-		nyys := make([]rulerSymType, len(yyS)*2)
+		nyys := make([]hitSymType, len(yyS)*2)
 		copy(nyys, yyS)
 		yyS = nyys
 	}
@@ -405,10 +405,10 @@ yynewstate:
 
 	/* consult goto table to find next state */
 	exState := yystate
-	yystate = int(rulerParseTab[yyS[yyp].yys][x]) + rulerTabOfs
+	yystate = int(hitParseTab[yyS[yyp].yys][x]) + hitTabOfs
 	/* reduction by production r */
-	if rulerDebug >= 2 {
-		__yyfmt__.Printf("reduce using rule %v (%s), and goto state %d\n", r, rulerSymNames[x], yystate)
+	if hitDebug >= 2 {
+		__yyfmt__.Printf("reduce using rule %v (%s), and goto state %d\n", r, hitSymNames[x], yystate)
 	}
 
 	switch r {
@@ -471,17 +471,4 @@ yynewstate:
 		return -1
 	}
 	goto yystack /* stack new state and value */
-}
-
-func Parse(src string, data map[string]interface{}) bool {
-	defer func() {
-		if e := recover(); e != nil {
-			fmt.Println(e)
-			return
-		}
-	}()
-	var res bool
-	rulerParse(newLexer(src), NewDataPackage(data), &res)
-	fmt.Println("res:", res)
-	return res
 }
