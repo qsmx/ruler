@@ -31,7 +31,7 @@ func (y yylexer) Error(e string) {
     fmt.Printf("pos: %v '%c'\n", y.pos, y.current)
 }
 
-func (y *yylexer) Lex(lval *rulerSymType) int {
+func (y *yylexer) Lex(lval *yySymType) int {
     c := y.current
     if y.empty {
         c, y.empty = y.getc(), false
@@ -68,14 +68,11 @@ arrays          {identifier}*(\.({letter}|{digit})+)+
 true            return TRUE
 false           return FALSE
 
-in              return IN
-notin           return NOTIN
-
-{string}        lval.value_string = string(y.buf[1:len(y.buf)-1]); return STRING
-{int}           lval.value_string = string(y.buf); return INT
-{float}         lval.value_string = string(y.buf); return FLOAT
-{identifier}    lval.value_string = string(y.buf); return IDENT
-{arrays}        lval.value_string = string(y.buf); return ARRAYS
+{string}        lval.value = string(y.buf[1:len(y.buf)-1]); return STRING
+{int}           lval.value = string(y.buf); return INT
+{float}         lval.value = string(y.buf); return FLOAT
+{identifier}    lval.value = string(y.buf); return IDENT
+{arrays}        lval.value = string(y.buf); return ARRAYS
 
 %%
     y.empty = true

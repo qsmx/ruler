@@ -4,16 +4,32 @@ state 0 //
     1 Input: .  [$end]
 
     $end    reduce using rule 1 (Input)
-    ARRAYS  shift, and goto state 7
-    FLOAT   shift, and goto state 4
-    IDENT   shift, and goto state 6
-    INT     shift, and goto state 3
-    STRING  shift, and goto state 5
+    '('     shift, and goto state 10
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
 
+    Arrays      goto state 14
+    Bool        goto state 5
+    BoolCell    goto state 8
+    CalcCell    goto state 11
     Expr        goto state 2
-    Filter      goto state 8
-    FilterData  goto state 9
+    ExprBool    goto state 3
+    ExprCalc    goto state 9
+    ExprExt     goto state 4
+    ExprFilter  goto state 7
+    ExprFunc    goto state 6
+    FilterName  goto state 19
+    Float       goto state 16
+    Ident       goto state 13
     Input       goto state 1
+    Int         goto state 15
+    String      goto state 17
 
 state 1 // [$end]
 
@@ -27,87 +43,1406 @@ state 2 // ARRAYS [$end]
 
     $end  reduce using rule 2 (Input)
 
-state 3 // INT
+state 3 // FALSE [$end]
 
-    3 Expr: INT .  [$end]
+    3 Expr: ExprBool .  [$end]
+   14 ExprBool: ExprBool . AND ExprBool  // assoc %left, prec 2
+   15 ExprBool: ExprBool . OR ExprBool  // assoc %left, prec 1
 
     $end  reduce using rule 3 (Expr)
+    AND   shift, and goto state 29
+    OR    shift, and goto state 30
 
-state 4 // FLOAT
+state 4 // ARRAYS [$end]
 
-    4 Expr: FLOAT .  [$end]
+    4 Expr: ExprExt .  [$end]
+   27 CalcCell: ExprExt .  ['%', '*', '+', '-', '/', EQU, GEQ, GTR, LEQ, LSS, NEQ]
 
     $end  reduce using rule 4 (Expr)
+    '%'   reduce using rule 27 (CalcCell)
+    '*'   reduce using rule 27 (CalcCell)
+    '+'   reduce using rule 27 (CalcCell)
+    '-'   reduce using rule 27 (CalcCell)
+    '/'   reduce using rule 27 (CalcCell)
+    EQU   reduce using rule 27 (CalcCell)
+    GEQ   reduce using rule 27 (CalcCell)
+    GTR   reduce using rule 27 (CalcCell)
+    LEQ   reduce using rule 27 (CalcCell)
+    LSS   reduce using rule 27 (CalcCell)
+    NEQ   reduce using rule 27 (CalcCell)
 
-state 5 // STRING
+state 5 // FALSE [$end]
 
-    5 Expr: STRING .  [$end]
+    5 ExprBool: Bool .  [$end, ')', ']', AND, OR]
+   17 BoolCell: Bool .  [EQU, NEQ]
 
-    $end  reduce using rule 5 (Expr)
+    $end  reduce using rule 5 (ExprBool)
+    ')'   reduce using rule 5 (ExprBool)
+    ']'   reduce using rule 5 (ExprBool)
+    AND   reduce using rule 5 (ExprBool)
+    EQU   reduce using rule 17 (BoolCell)
+    NEQ   reduce using rule 17 (BoolCell)
+    OR    reduce using rule 5 (ExprBool)
 
-state 6 // IDENT
+state 6 // IDENT '(' ')' [$end]
 
-    6 Expr: IDENT .  [$end]
-   11 FilterData: IDENT .  ['[']
+    6 ExprBool: ExprFunc .  [$end, ')', ']', AND, OR]
+   28 CalcCell: ExprFunc .  ['%', ')', '*', '+', '-', '/', EQU, GEQ, GTR, LEQ, LSS, NEQ]
 
-    $end  reduce using rule 6 (Expr)
-    '['   reduce using rule 11 (FilterData)
+    $end  reduce using rule 6 (ExprBool)
+    '%'   reduce using rule 28 (CalcCell)
+    ')'   reduce using rule 6 (ExprBool)
+    '*'   reduce using rule 28 (CalcCell)
+    '+'   reduce using rule 28 (CalcCell)
+    '-'   reduce using rule 28 (CalcCell)
+    '/'   reduce using rule 28 (CalcCell)
+    ']'   reduce using rule 6 (ExprBool)
+    AND   reduce using rule 6 (ExprBool)
+    EQU   reduce using rule 28 (CalcCell)
+    GEQ   reduce using rule 28 (CalcCell)
+    GTR   reduce using rule 28 (CalcCell)
+    LEQ   reduce using rule 28 (CalcCell)
+    LSS   reduce using rule 28 (CalcCell)
+    NEQ   reduce using rule 28 (CalcCell)
+    OR    reduce using rule 6 (ExprBool)
+    conflict on ')', reduce using rule 6, reduce using rule 28
 
-state 7 // ARRAYS
+state 7 // ARRAYS '[' FALSE ']' [$end]
 
-    7 Expr: ARRAYS .  [$end]
-   12 FilterData: ARRAYS .  ['[']
+    7 ExprBool: ExprFilter .  [$end, ')', ']', AND, OR]
 
-    $end  reduce using rule 7 (Expr)
-    '['   reduce using rule 12 (FilterData)
+    $end  reduce using rule 7 (ExprBool)
+    ')'   reduce using rule 7 (ExprBool)
+    ']'   reduce using rule 7 (ExprBool)
+    AND   reduce using rule 7 (ExprBool)
+    OR    reduce using rule 7 (ExprBool)
 
-state 8 // ARRAYS '[' IDENT NEQ INT ']' [$end]
+state 8 // ARRAYS [EQU]
 
-    8 Expr: Filter .  [$end]
+    8 ExprBool: BoolCell . NEQ BoolCell  // assoc %left, prec 3
+    9 ExprBool: BoolCell . EQU BoolCell  // assoc %left, prec 3
 
-    $end  reduce using rule 8 (Expr)
+    EQU  shift, and goto state 71
+    NEQ  shift, and goto state 70
 
-state 9 // ARRAYS ['[']
+state 9 // ARRAYS ['%']
 
-    9 Filter: FilterData . '[' Condition ']'
+   10 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 4
+   11 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 4
+   12 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 4
+   13 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 4
+   18 BoolCell: ExprCalc .  [EQU, NEQ]
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
 
-    '['  shift, and goto state 10
+    '%'  shift, and goto state 51
+    '*'  shift, and goto state 49
+    '+'  shift, and goto state 47
+    '-'  shift, and goto state 48
+    '/'  shift, and goto state 50
+    EQU  reduce using rule 18 (BoolCell)
+    GEQ  shift, and goto state 65
+    GTR  shift, and goto state 64
+    LEQ  shift, and goto state 63
+    LSS  shift, and goto state 62
+    NEQ  reduce using rule 18 (BoolCell)
 
-state 10 // ARRAYS '['
+state 10 // '('
 
-    9 Filter: FilterData '[' . Condition ']'
+   16 ExprBool: '(' . ExprBool ')'
+   26 ExprCalc: '(' . ExprCalc ')'
 
-    IDENT  shift, and goto state 12
+    '('     shift, and goto state 10
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
 
-    Condition  goto state 11
+    Arrays      goto state 14
+    Bool        goto state 5
+    BoolCell    goto state 8
+    CalcCell    goto state 11
+    ExprBool    goto state 60
+    ExprCalc    goto state 59
+    ExprExt     goto state 28
+    ExprFilter  goto state 7
+    ExprFunc    goto state 6
+    FilterName  goto state 19
+    Float       goto state 16
+    Ident       goto state 13
+    Int         goto state 15
+    String      goto state 17
 
-state 11 // ARRAYS '[' IDENT NEQ INT [']']
+state 11 // ARRAYS ['%']
 
-    9 Filter: FilterData '[' Condition . ']'
+   19 ExprCalc: CalcCell .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
 
-    ']'  shift, and goto state 15
+    $end  reduce using rule 19 (ExprCalc)
+    '%'   reduce using rule 19 (ExprCalc)
+    ')'   reduce using rule 19 (ExprCalc)
+    '*'   reduce using rule 19 (ExprCalc)
+    '+'   reduce using rule 19 (ExprCalc)
+    ','   reduce using rule 19 (ExprCalc)
+    '-'   reduce using rule 19 (ExprCalc)
+    '/'   reduce using rule 19 (ExprCalc)
+    ']'   reduce using rule 19 (ExprCalc)
+    AND   reduce using rule 19 (ExprCalc)
+    EQU   reduce using rule 19 (ExprCalc)
+    GEQ   reduce using rule 19 (ExprCalc)
+    GTR   reduce using rule 19 (ExprCalc)
+    LEQ   reduce using rule 19 (ExprCalc)
+    LSS   reduce using rule 19 (ExprCalc)
+    NEQ   reduce using rule 19 (ExprCalc)
+    OR    reduce using rule 19 (ExprCalc)
 
-state 12 // ARRAYS '[' IDENT
+state 12 // '-'
 
-   10 Condition: IDENT . NEQ INT
+   25 ExprCalc: '-' . ExprCalc  // assoc %left, prec 7
 
-    NEQ  shift, and goto state 13
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
 
-state 13 // ARRAYS '[' IDENT NEQ
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 58
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
 
-   10 Condition: IDENT NEQ . INT
+state 13 // IDENT [$end]
 
-    INT  shift, and goto state 14
+   29 ExprExt: Ident .  [$end, '%', ')', '*', '+', '-', '/', EQU, GEQ, GTR, LEQ, LSS, NEQ]
+   39 FilterName: Ident .  ['[']
 
-state 14 // ARRAYS '[' IDENT NEQ INT
+    $end  reduce using rule 29 (ExprExt)
+    '%'   reduce using rule 29 (ExprExt)
+    ')'   reduce using rule 29 (ExprExt)
+    '*'   reduce using rule 29 (ExprExt)
+    '+'   reduce using rule 29 (ExprExt)
+    '-'   reduce using rule 29 (ExprExt)
+    '/'   reduce using rule 29 (ExprExt)
+    '['   reduce using rule 39 (FilterName)
+    EQU   reduce using rule 29 (ExprExt)
+    GEQ   reduce using rule 29 (ExprExt)
+    GTR   reduce using rule 29 (ExprExt)
+    LEQ   reduce using rule 29 (ExprExt)
+    LSS   reduce using rule 29 (ExprExt)
+    NEQ   reduce using rule 29 (ExprExt)
 
-   10 Condition: IDENT NEQ INT .  [']']
+state 14 // ARRAYS [$end]
 
-    ']'  reduce using rule 10 (Condition)
+   30 ExprExt: Arrays .  [$end, '%', ')', '*', '+', '-', '/', EQU, GEQ, GTR, LEQ, LSS, NEQ]
+   40 FilterName: Arrays .  ['[']
 
-state 15 // ARRAYS '[' IDENT NEQ INT ']'
+    $end  reduce using rule 30 (ExprExt)
+    '%'   reduce using rule 30 (ExprExt)
+    ')'   reduce using rule 30 (ExprExt)
+    '*'   reduce using rule 30 (ExprExt)
+    '+'   reduce using rule 30 (ExprExt)
+    '-'   reduce using rule 30 (ExprExt)
+    '/'   reduce using rule 30 (ExprExt)
+    '['   reduce using rule 40 (FilterName)
+    EQU   reduce using rule 30 (ExprExt)
+    GEQ   reduce using rule 30 (ExprExt)
+    GTR   reduce using rule 30 (ExprExt)
+    LEQ   reduce using rule 30 (ExprExt)
+    LSS   reduce using rule 30 (ExprExt)
+    NEQ   reduce using rule 30 (ExprExt)
 
-    9 Filter: FilterData '[' Condition ']' .  [$end]
+state 15 // INT [$end]
 
-    $end  reduce using rule 9 (Filter)
+   31 ExprExt: Int .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 31 (ExprExt)
+    '%'   reduce using rule 31 (ExprExt)
+    ')'   reduce using rule 31 (ExprExt)
+    '*'   reduce using rule 31 (ExprExt)
+    '+'   reduce using rule 31 (ExprExt)
+    ','   reduce using rule 31 (ExprExt)
+    '-'   reduce using rule 31 (ExprExt)
+    '/'   reduce using rule 31 (ExprExt)
+    ']'   reduce using rule 31 (ExprExt)
+    AND   reduce using rule 31 (ExprExt)
+    EQU   reduce using rule 31 (ExprExt)
+    GEQ   reduce using rule 31 (ExprExt)
+    GTR   reduce using rule 31 (ExprExt)
+    LEQ   reduce using rule 31 (ExprExt)
+    LSS   reduce using rule 31 (ExprExt)
+    NEQ   reduce using rule 31 (ExprExt)
+    OR    reduce using rule 31 (ExprExt)
+
+state 16 // FLOAT [$end]
+
+   32 ExprExt: Float .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 32 (ExprExt)
+    '%'   reduce using rule 32 (ExprExt)
+    ')'   reduce using rule 32 (ExprExt)
+    '*'   reduce using rule 32 (ExprExt)
+    '+'   reduce using rule 32 (ExprExt)
+    ','   reduce using rule 32 (ExprExt)
+    '-'   reduce using rule 32 (ExprExt)
+    '/'   reduce using rule 32 (ExprExt)
+    ']'   reduce using rule 32 (ExprExt)
+    AND   reduce using rule 32 (ExprExt)
+    EQU   reduce using rule 32 (ExprExt)
+    GEQ   reduce using rule 32 (ExprExt)
+    GTR   reduce using rule 32 (ExprExt)
+    LEQ   reduce using rule 32 (ExprExt)
+    LSS   reduce using rule 32 (ExprExt)
+    NEQ   reduce using rule 32 (ExprExt)
+    OR    reduce using rule 32 (ExprExt)
+
+state 17 // STRING [$end]
+
+   33 ExprExt: String .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 33 (ExprExt)
+    '%'   reduce using rule 33 (ExprExt)
+    ')'   reduce using rule 33 (ExprExt)
+    '*'   reduce using rule 33 (ExprExt)
+    '+'   reduce using rule 33 (ExprExt)
+    ','   reduce using rule 33 (ExprExt)
+    '-'   reduce using rule 33 (ExprExt)
+    '/'   reduce using rule 33 (ExprExt)
+    ']'   reduce using rule 33 (ExprExt)
+    AND   reduce using rule 33 (ExprExt)
+    EQU   reduce using rule 33 (ExprExt)
+    GEQ   reduce using rule 33 (ExprExt)
+    GTR   reduce using rule 33 (ExprExt)
+    LEQ   reduce using rule 33 (ExprExt)
+    LSS   reduce using rule 33 (ExprExt)
+    NEQ   reduce using rule 33 (ExprExt)
+    OR    reduce using rule 33 (ExprExt)
+
+state 18 // IDENT
+
+   34 ExprFunc: IDENT . '(' Args ')'
+   43 Ident: IDENT .  [$end, '%', ')', '*', '+', ',', '-', '/', '[', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 43 (Ident)
+    '%'   reduce using rule 43 (Ident)
+    '('   shift, and goto state 34
+    ')'   reduce using rule 43 (Ident)
+    '*'   reduce using rule 43 (Ident)
+    '+'   reduce using rule 43 (Ident)
+    ','   reduce using rule 43 (Ident)
+    '-'   reduce using rule 43 (Ident)
+    '/'   reduce using rule 43 (Ident)
+    '['   reduce using rule 43 (Ident)
+    ']'   reduce using rule 43 (Ident)
+    AND   reduce using rule 43 (Ident)
+    EQU   reduce using rule 43 (Ident)
+    GEQ   reduce using rule 43 (Ident)
+    GTR   reduce using rule 43 (Ident)
+    LEQ   reduce using rule 43 (Ident)
+    LSS   reduce using rule 43 (Ident)
+    NEQ   reduce using rule 43 (Ident)
+    OR    reduce using rule 43 (Ident)
+
+state 19 // ARRAYS ['[']
+
+   38 ExprFilter: FilterName . '[' ExprBool ']'
+
+    '['  shift, and goto state 26
+
+state 20 // ARRAYS
+
+   44 Arrays: ARRAYS .  [$end, '%', ')', '*', '+', ',', '-', '/', '[', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 44 (Arrays)
+    '%'   reduce using rule 44 (Arrays)
+    ')'   reduce using rule 44 (Arrays)
+    '*'   reduce using rule 44 (Arrays)
+    '+'   reduce using rule 44 (Arrays)
+    ','   reduce using rule 44 (Arrays)
+    '-'   reduce using rule 44 (Arrays)
+    '/'   reduce using rule 44 (Arrays)
+    '['   reduce using rule 44 (Arrays)
+    ']'   reduce using rule 44 (Arrays)
+    AND   reduce using rule 44 (Arrays)
+    EQU   reduce using rule 44 (Arrays)
+    GEQ   reduce using rule 44 (Arrays)
+    GTR   reduce using rule 44 (Arrays)
+    LEQ   reduce using rule 44 (Arrays)
+    LSS   reduce using rule 44 (Arrays)
+    NEQ   reduce using rule 44 (Arrays)
+    OR    reduce using rule 44 (Arrays)
+
+state 21 // INT
+
+   45 Int: INT .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 45 (Int)
+    '%'   reduce using rule 45 (Int)
+    ')'   reduce using rule 45 (Int)
+    '*'   reduce using rule 45 (Int)
+    '+'   reduce using rule 45 (Int)
+    ','   reduce using rule 45 (Int)
+    '-'   reduce using rule 45 (Int)
+    '/'   reduce using rule 45 (Int)
+    ']'   reduce using rule 45 (Int)
+    AND   reduce using rule 45 (Int)
+    EQU   reduce using rule 45 (Int)
+    GEQ   reduce using rule 45 (Int)
+    GTR   reduce using rule 45 (Int)
+    LEQ   reduce using rule 45 (Int)
+    LSS   reduce using rule 45 (Int)
+    NEQ   reduce using rule 45 (Int)
+    OR    reduce using rule 45 (Int)
+
+state 22 // FLOAT
+
+   46 Float: FLOAT .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 46 (Float)
+    '%'   reduce using rule 46 (Float)
+    ')'   reduce using rule 46 (Float)
+    '*'   reduce using rule 46 (Float)
+    '+'   reduce using rule 46 (Float)
+    ','   reduce using rule 46 (Float)
+    '-'   reduce using rule 46 (Float)
+    '/'   reduce using rule 46 (Float)
+    ']'   reduce using rule 46 (Float)
+    AND   reduce using rule 46 (Float)
+    EQU   reduce using rule 46 (Float)
+    GEQ   reduce using rule 46 (Float)
+    GTR   reduce using rule 46 (Float)
+    LEQ   reduce using rule 46 (Float)
+    LSS   reduce using rule 46 (Float)
+    NEQ   reduce using rule 46 (Float)
+    OR    reduce using rule 46 (Float)
+
+state 23 // STRING
+
+   47 String: STRING .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 47 (String)
+    '%'   reduce using rule 47 (String)
+    ')'   reduce using rule 47 (String)
+    '*'   reduce using rule 47 (String)
+    '+'   reduce using rule 47 (String)
+    ','   reduce using rule 47 (String)
+    '-'   reduce using rule 47 (String)
+    '/'   reduce using rule 47 (String)
+    ']'   reduce using rule 47 (String)
+    AND   reduce using rule 47 (String)
+    EQU   reduce using rule 47 (String)
+    GEQ   reduce using rule 47 (String)
+    GTR   reduce using rule 47 (String)
+    LEQ   reduce using rule 47 (String)
+    LSS   reduce using rule 47 (String)
+    NEQ   reduce using rule 47 (String)
+    OR    reduce using rule 47 (String)
+
+state 24 // TRUE
+
+   48 Bool: TRUE .  [$end, ')', ',', ']', AND, EQU, NEQ, OR]
+
+    $end  reduce using rule 48 (Bool)
+    ')'   reduce using rule 48 (Bool)
+    ','   reduce using rule 48 (Bool)
+    ']'   reduce using rule 48 (Bool)
+    AND   reduce using rule 48 (Bool)
+    EQU   reduce using rule 48 (Bool)
+    NEQ   reduce using rule 48 (Bool)
+    OR    reduce using rule 48 (Bool)
+
+state 25 // FALSE
+
+   49 Bool: FALSE .  [$end, ')', ',', ']', AND, EQU, NEQ, OR]
+
+    $end  reduce using rule 49 (Bool)
+    ')'   reduce using rule 49 (Bool)
+    ','   reduce using rule 49 (Bool)
+    ']'   reduce using rule 49 (Bool)
+    AND   reduce using rule 49 (Bool)
+    EQU   reduce using rule 49 (Bool)
+    NEQ   reduce using rule 49 (Bool)
+    OR    reduce using rule 49 (Bool)
+
+state 26 // ARRAYS '['
+
+   38 ExprFilter: FilterName '[' . ExprBool ']'
+
+    '('     shift, and goto state 10
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays      goto state 14
+    Bool        goto state 5
+    BoolCell    goto state 8
+    CalcCell    goto state 11
+    ExprBool    goto state 27
+    ExprCalc    goto state 9
+    ExprExt     goto state 28
+    ExprFilter  goto state 7
+    ExprFunc    goto state 6
+    FilterName  goto state 19
+    Float       goto state 16
+    Ident       goto state 13
+    Int         goto state 15
+    String      goto state 17
+
+state 27 // ARRAYS '[' FALSE [']']
+
+   14 ExprBool: ExprBool . AND ExprBool  // assoc %left, prec 2
+   15 ExprBool: ExprBool . OR ExprBool  // assoc %left, prec 1
+   38 ExprFilter: FilterName '[' ExprBool . ']'
+
+    ']'  shift, and goto state 31
+    AND  shift, and goto state 29
+    OR   shift, and goto state 30
+
+state 28 // '-' ARRAYS [$end]
+
+   27 CalcCell: ExprExt .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 27 (CalcCell)
+    '%'   reduce using rule 27 (CalcCell)
+    ')'   reduce using rule 27 (CalcCell)
+    '*'   reduce using rule 27 (CalcCell)
+    '+'   reduce using rule 27 (CalcCell)
+    ','   reduce using rule 27 (CalcCell)
+    '-'   reduce using rule 27 (CalcCell)
+    '/'   reduce using rule 27 (CalcCell)
+    ']'   reduce using rule 27 (CalcCell)
+    AND   reduce using rule 27 (CalcCell)
+    EQU   reduce using rule 27 (CalcCell)
+    GEQ   reduce using rule 27 (CalcCell)
+    GTR   reduce using rule 27 (CalcCell)
+    LEQ   reduce using rule 27 (CalcCell)
+    LSS   reduce using rule 27 (CalcCell)
+    NEQ   reduce using rule 27 (CalcCell)
+    OR    reduce using rule 27 (CalcCell)
+
+state 29 // FALSE AND
+
+   14 ExprBool: ExprBool AND . ExprBool  // assoc %left, prec 2
+
+    '('     shift, and goto state 10
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays      goto state 14
+    Bool        goto state 5
+    BoolCell    goto state 8
+    CalcCell    goto state 11
+    ExprBool    goto state 33
+    ExprCalc    goto state 9
+    ExprExt     goto state 28
+    ExprFilter  goto state 7
+    ExprFunc    goto state 6
+    FilterName  goto state 19
+    Float       goto state 16
+    Ident       goto state 13
+    Int         goto state 15
+    String      goto state 17
+
+state 30 // FALSE OR
+
+   15 ExprBool: ExprBool OR . ExprBool  // assoc %left, prec 1
+
+    '('     shift, and goto state 10
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays      goto state 14
+    Bool        goto state 5
+    BoolCell    goto state 8
+    CalcCell    goto state 11
+    ExprBool    goto state 32
+    ExprCalc    goto state 9
+    ExprExt     goto state 28
+    ExprFilter  goto state 7
+    ExprFunc    goto state 6
+    FilterName  goto state 19
+    Float       goto state 16
+    Ident       goto state 13
+    Int         goto state 15
+    String      goto state 17
+
+state 31 // ARRAYS '[' FALSE ']'
+
+   38 ExprFilter: FilterName '[' ExprBool ']' .  [$end, ')', ']', AND, OR]
+
+    $end  reduce using rule 38 (ExprFilter)
+    ')'   reduce using rule 38 (ExprFilter)
+    ']'   reduce using rule 38 (ExprFilter)
+    AND   reduce using rule 38 (ExprFilter)
+    OR    reduce using rule 38 (ExprFilter)
+
+state 32 // FALSE OR FALSE [$end]
+
+   14 ExprBool: ExprBool . AND ExprBool  // assoc %left, prec 2
+   15 ExprBool: ExprBool . OR ExprBool  // assoc %left, prec 1
+   15 ExprBool: ExprBool OR ExprBool .  [$end, ')', ']', OR]  // assoc %left, prec 1
+
+    $end  reduce using rule 15 (ExprBool)
+    ')'   reduce using rule 15 (ExprBool)
+    ']'   reduce using rule 15 (ExprBool)
+    AND   shift, and goto state 29
+    OR    reduce using rule 15 (ExprBool)
+
+state 33 // FALSE AND FALSE [$end]
+
+   14 ExprBool: ExprBool . AND ExprBool  // assoc %left, prec 2
+   14 ExprBool: ExprBool AND ExprBool .  [$end, ')', ']', AND, OR]  // assoc %left, prec 2
+   15 ExprBool: ExprBool . OR ExprBool  // assoc %left, prec 1
+
+    $end  reduce using rule 14 (ExprBool)
+    ')'   reduce using rule 14 (ExprBool)
+    ']'   reduce using rule 14 (ExprBool)
+    AND   reduce using rule 14 (ExprBool)
+    OR    reduce using rule 14 (ExprBool)
+
+state 34 // IDENT '('
+
+   34 ExprFunc: IDENT '(' . Args ')'
+   35 Args: .  [')', ',']
+
+    '('     shift, and goto state 37
+    ')'     reduce using rule 35 (Args)
+    ','     reduce using rule 35 (Args)
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Args      goto state 41
+    Arrays    goto state 40
+    Bool      goto state 35
+    BoolCell  goto state 42
+    CalcCell  goto state 11
+    ExprCalc  goto state 36
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 35 // IDENT '(' FALSE [$end]
+
+   17 BoolCell: Bool .  [$end, ')', ',', ']', AND, OR]
+
+    $end  reduce using rule 17 (BoolCell)
+    ')'   reduce using rule 17 (BoolCell)
+    ','   reduce using rule 17 (BoolCell)
+    ']'   reduce using rule 17 (BoolCell)
+    AND   reduce using rule 17 (BoolCell)
+    OR    reduce using rule 17 (BoolCell)
+
+state 36 // IDENT '(' ARRAYS [$end]
+
+   18 BoolCell: ExprCalc .  [$end, ')', ',', ']', AND, OR]
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 18 (BoolCell)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 18 (BoolCell)
+    '*'   shift, and goto state 49
+    '+'   shift, and goto state 47
+    ','   reduce using rule 18 (BoolCell)
+    '-'   shift, and goto state 48
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 18 (BoolCell)
+    AND   reduce using rule 18 (BoolCell)
+    OR    reduce using rule 18 (BoolCell)
+
+state 37 // '-' '('
+
+   26 ExprCalc: '(' . ExprCalc ')'
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 46
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 38 // '-' IDENT '(' ')' [$end]
+
+   28 CalcCell: ExprFunc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 28 (CalcCell)
+    '%'   reduce using rule 28 (CalcCell)
+    ')'   reduce using rule 28 (CalcCell)
+    '*'   reduce using rule 28 (CalcCell)
+    '+'   reduce using rule 28 (CalcCell)
+    ','   reduce using rule 28 (CalcCell)
+    '-'   reduce using rule 28 (CalcCell)
+    '/'   reduce using rule 28 (CalcCell)
+    ']'   reduce using rule 28 (CalcCell)
+    AND   reduce using rule 28 (CalcCell)
+    EQU   reduce using rule 28 (CalcCell)
+    GEQ   reduce using rule 28 (CalcCell)
+    GTR   reduce using rule 28 (CalcCell)
+    LEQ   reduce using rule 28 (CalcCell)
+    LSS   reduce using rule 28 (CalcCell)
+    NEQ   reduce using rule 28 (CalcCell)
+    OR    reduce using rule 28 (CalcCell)
+
+state 39 // '-' IDENT [$end]
+
+   29 ExprExt: Ident .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 29 (ExprExt)
+    '%'   reduce using rule 29 (ExprExt)
+    ')'   reduce using rule 29 (ExprExt)
+    '*'   reduce using rule 29 (ExprExt)
+    '+'   reduce using rule 29 (ExprExt)
+    ','   reduce using rule 29 (ExprExt)
+    '-'   reduce using rule 29 (ExprExt)
+    '/'   reduce using rule 29 (ExprExt)
+    ']'   reduce using rule 29 (ExprExt)
+    AND   reduce using rule 29 (ExprExt)
+    EQU   reduce using rule 29 (ExprExt)
+    GEQ   reduce using rule 29 (ExprExt)
+    GTR   reduce using rule 29 (ExprExt)
+    LEQ   reduce using rule 29 (ExprExt)
+    LSS   reduce using rule 29 (ExprExt)
+    NEQ   reduce using rule 29 (ExprExt)
+    OR    reduce using rule 29 (ExprExt)
+
+state 40 // '-' ARRAYS [$end]
+
+   30 ExprExt: Arrays .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 30 (ExprExt)
+    '%'   reduce using rule 30 (ExprExt)
+    ')'   reduce using rule 30 (ExprExt)
+    '*'   reduce using rule 30 (ExprExt)
+    '+'   reduce using rule 30 (ExprExt)
+    ','   reduce using rule 30 (ExprExt)
+    '-'   reduce using rule 30 (ExprExt)
+    '/'   reduce using rule 30 (ExprExt)
+    ']'   reduce using rule 30 (ExprExt)
+    AND   reduce using rule 30 (ExprExt)
+    EQU   reduce using rule 30 (ExprExt)
+    GEQ   reduce using rule 30 (ExprExt)
+    GTR   reduce using rule 30 (ExprExt)
+    LEQ   reduce using rule 30 (ExprExt)
+    LSS   reduce using rule 30 (ExprExt)
+    NEQ   reduce using rule 30 (ExprExt)
+    OR    reduce using rule 30 (ExprExt)
+
+state 41 // IDENT '(' [')']
+
+   34 ExprFunc: IDENT '(' Args . ')'
+   37 Args: Args . ',' BoolCell
+
+    ')'  shift, and goto state 43
+    ','  shift, and goto state 44
+
+state 42 // IDENT '(' ARRAYS [')']
+
+   36 Args: BoolCell .  [')', ',']
+
+    ')'  reduce using rule 36 (Args)
+    ','  reduce using rule 36 (Args)
+
+state 43 // IDENT '(' ')'
+
+   34 ExprFunc: IDENT '(' Args ')' .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 34 (ExprFunc)
+    '%'   reduce using rule 34 (ExprFunc)
+    ')'   reduce using rule 34 (ExprFunc)
+    '*'   reduce using rule 34 (ExprFunc)
+    '+'   reduce using rule 34 (ExprFunc)
+    ','   reduce using rule 34 (ExprFunc)
+    '-'   reduce using rule 34 (ExprFunc)
+    '/'   reduce using rule 34 (ExprFunc)
+    ']'   reduce using rule 34 (ExprFunc)
+    AND   reduce using rule 34 (ExprFunc)
+    EQU   reduce using rule 34 (ExprFunc)
+    GEQ   reduce using rule 34 (ExprFunc)
+    GTR   reduce using rule 34 (ExprFunc)
+    LEQ   reduce using rule 34 (ExprFunc)
+    LSS   reduce using rule 34 (ExprFunc)
+    NEQ   reduce using rule 34 (ExprFunc)
+    OR    reduce using rule 34 (ExprFunc)
+
+state 44 // IDENT '(' ','
+
+   37 Args: Args ',' . BoolCell
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays    goto state 40
+    Bool      goto state 35
+    BoolCell  goto state 45
+    CalcCell  goto state 11
+    ExprCalc  goto state 36
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 45 // IDENT '(' ',' ARRAYS [')']
+
+   37 Args: Args ',' BoolCell .  [')', ',']
+
+    ')'  reduce using rule 37 (Args)
+    ','  reduce using rule 37 (Args)
+
+state 46 // '-' '(' ARRAYS ['%']
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   26 ExprCalc: '(' ExprCalc . ')'
+
+    '%'  shift, and goto state 51
+    ')'  shift, and goto state 52
+    '*'  shift, and goto state 49
+    '+'  shift, and goto state 47
+    '-'  shift, and goto state 48
+    '/'  shift, and goto state 50
+
+state 47 // ARRAYS '+'
+
+   20 ExprCalc: ExprCalc '+' . ExprCalc  // assoc %left, prec 5
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 57
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 48 // ARRAYS '-'
+
+   21 ExprCalc: ExprCalc '-' . ExprCalc  // assoc %left, prec 5
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 56
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 49 // ARRAYS '*'
+
+   22 ExprCalc: ExprCalc '*' . ExprCalc  // assoc %left, prec 6
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 55
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 50 // ARRAYS '/'
+
+   23 ExprCalc: ExprCalc '/' . ExprCalc  // assoc %left, prec 6
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 54
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 51 // ARRAYS '%'
+
+   24 ExprCalc: ExprCalc '%' . ExprCalc  // assoc %left, prec 6
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 53
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 52 // '(' ARRAYS ')'
+
+   26 ExprCalc: '(' ExprCalc ')' .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]
+
+    $end  reduce using rule 26 (ExprCalc)
+    '%'   reduce using rule 26 (ExprCalc)
+    ')'   reduce using rule 26 (ExprCalc)
+    '*'   reduce using rule 26 (ExprCalc)
+    '+'   reduce using rule 26 (ExprCalc)
+    ','   reduce using rule 26 (ExprCalc)
+    '-'   reduce using rule 26 (ExprCalc)
+    '/'   reduce using rule 26 (ExprCalc)
+    ']'   reduce using rule 26 (ExprCalc)
+    AND   reduce using rule 26 (ExprCalc)
+    EQU   reduce using rule 26 (ExprCalc)
+    GEQ   reduce using rule 26 (ExprCalc)
+    GTR   reduce using rule 26 (ExprCalc)
+    LEQ   reduce using rule 26 (ExprCalc)
+    LSS   reduce using rule 26 (ExprCalc)
+    NEQ   reduce using rule 26 (ExprCalc)
+    OR    reduce using rule 26 (ExprCalc)
+
+state 53 // ARRAYS '%' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc '%' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
+
+    $end  reduce using rule 24 (ExprCalc)
+    '%'   reduce using rule 24 (ExprCalc)
+    ')'   reduce using rule 24 (ExprCalc)
+    '*'   reduce using rule 24 (ExprCalc)
+    '+'   reduce using rule 24 (ExprCalc)
+    ','   reduce using rule 24 (ExprCalc)
+    '-'   reduce using rule 24 (ExprCalc)
+    '/'   reduce using rule 24 (ExprCalc)
+    ']'   reduce using rule 24 (ExprCalc)
+    AND   reduce using rule 24 (ExprCalc)
+    EQU   reduce using rule 24 (ExprCalc)
+    GEQ   reduce using rule 24 (ExprCalc)
+    GTR   reduce using rule 24 (ExprCalc)
+    LEQ   reduce using rule 24 (ExprCalc)
+    LSS   reduce using rule 24 (ExprCalc)
+    NEQ   reduce using rule 24 (ExprCalc)
+    OR    reduce using rule 24 (ExprCalc)
+
+state 54 // ARRAYS '/' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc '/' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 23 (ExprCalc)
+    '%'   reduce using rule 23 (ExprCalc)
+    ')'   reduce using rule 23 (ExprCalc)
+    '*'   reduce using rule 23 (ExprCalc)
+    '+'   reduce using rule 23 (ExprCalc)
+    ','   reduce using rule 23 (ExprCalc)
+    '-'   reduce using rule 23 (ExprCalc)
+    '/'   reduce using rule 23 (ExprCalc)
+    ']'   reduce using rule 23 (ExprCalc)
+    AND   reduce using rule 23 (ExprCalc)
+    EQU   reduce using rule 23 (ExprCalc)
+    GEQ   reduce using rule 23 (ExprCalc)
+    GTR   reduce using rule 23 (ExprCalc)
+    LEQ   reduce using rule 23 (ExprCalc)
+    LSS   reduce using rule 23 (ExprCalc)
+    NEQ   reduce using rule 23 (ExprCalc)
+    OR    reduce using rule 23 (ExprCalc)
+
+state 55 // ARRAYS '*' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   22 ExprCalc: ExprCalc '*' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 22 (ExprCalc)
+    '%'   reduce using rule 22 (ExprCalc)
+    ')'   reduce using rule 22 (ExprCalc)
+    '*'   reduce using rule 22 (ExprCalc)
+    '+'   reduce using rule 22 (ExprCalc)
+    ','   reduce using rule 22 (ExprCalc)
+    '-'   reduce using rule 22 (ExprCalc)
+    '/'   reduce using rule 22 (ExprCalc)
+    ']'   reduce using rule 22 (ExprCalc)
+    AND   reduce using rule 22 (ExprCalc)
+    EQU   reduce using rule 22 (ExprCalc)
+    GEQ   reduce using rule 22 (ExprCalc)
+    GTR   reduce using rule 22 (ExprCalc)
+    LEQ   reduce using rule 22 (ExprCalc)
+    LSS   reduce using rule 22 (ExprCalc)
+    NEQ   reduce using rule 22 (ExprCalc)
+    OR    reduce using rule 22 (ExprCalc)
+
+state 56 // ARRAYS '-' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc '-' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 21 (ExprCalc)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 21 (ExprCalc)
+    '*'   shift, and goto state 49
+    '+'   reduce using rule 21 (ExprCalc)
+    ','   reduce using rule 21 (ExprCalc)
+    '-'   reduce using rule 21 (ExprCalc)
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 21 (ExprCalc)
+    AND   reduce using rule 21 (ExprCalc)
+    EQU   reduce using rule 21 (ExprCalc)
+    GEQ   reduce using rule 21 (ExprCalc)
+    GTR   reduce using rule 21 (ExprCalc)
+    LEQ   reduce using rule 21 (ExprCalc)
+    LSS   reduce using rule 21 (ExprCalc)
+    NEQ   reduce using rule 21 (ExprCalc)
+    OR    reduce using rule 21 (ExprCalc)
+
+state 57 // ARRAYS '+' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   20 ExprCalc: ExprCalc '+' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 20 (ExprCalc)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 20 (ExprCalc)
+    '*'   shift, and goto state 49
+    '+'   reduce using rule 20 (ExprCalc)
+    ','   reduce using rule 20 (ExprCalc)
+    '-'   reduce using rule 20 (ExprCalc)
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 20 (ExprCalc)
+    AND   reduce using rule 20 (ExprCalc)
+    EQU   reduce using rule 20 (ExprCalc)
+    GEQ   reduce using rule 20 (ExprCalc)
+    GTR   reduce using rule 20 (ExprCalc)
+    LEQ   reduce using rule 20 (ExprCalc)
+    LSS   reduce using rule 20 (ExprCalc)
+    NEQ   reduce using rule 20 (ExprCalc)
+    OR    reduce using rule 20 (ExprCalc)
+
+state 58 // '-' ARRAYS [$end]
+
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   25 ExprCalc: '-' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 7
+
+    $end  reduce using rule 25 (ExprCalc)
+    '%'   reduce using rule 25 (ExprCalc)
+    ')'   reduce using rule 25 (ExprCalc)
+    '*'   reduce using rule 25 (ExprCalc)
+    '+'   reduce using rule 25 (ExprCalc)
+    ','   reduce using rule 25 (ExprCalc)
+    '-'   reduce using rule 25 (ExprCalc)
+    '/'   reduce using rule 25 (ExprCalc)
+    ']'   reduce using rule 25 (ExprCalc)
+    AND   reduce using rule 25 (ExprCalc)
+    EQU   reduce using rule 25 (ExprCalc)
+    GEQ   reduce using rule 25 (ExprCalc)
+    GTR   reduce using rule 25 (ExprCalc)
+    LEQ   reduce using rule 25 (ExprCalc)
+    LSS   reduce using rule 25 (ExprCalc)
+    NEQ   reduce using rule 25 (ExprCalc)
+    OR    reduce using rule 25 (ExprCalc)
+
+state 59 // '(' ARRAYS ['%']
+
+   10 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 4
+   11 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 4
+   12 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 4
+   13 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 4
+   18 BoolCell: ExprCalc .  [EQU, NEQ]
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   26 ExprCalc: '(' ExprCalc . ')'
+
+    '%'  shift, and goto state 51
+    ')'  shift, and goto state 52
+    '*'  shift, and goto state 49
+    '+'  shift, and goto state 47
+    '-'  shift, and goto state 48
+    '/'  shift, and goto state 50
+    EQU  reduce using rule 18 (BoolCell)
+    GEQ  shift, and goto state 65
+    GTR  shift, and goto state 64
+    LEQ  shift, and goto state 63
+    LSS  shift, and goto state 62
+    NEQ  reduce using rule 18 (BoolCell)
+
+state 60 // '(' FALSE [')']
+
+   14 ExprBool: ExprBool . AND ExprBool  // assoc %left, prec 2
+   15 ExprBool: ExprBool . OR ExprBool  // assoc %left, prec 1
+   16 ExprBool: '(' ExprBool . ')'
+
+    ')'  shift, and goto state 61
+    AND  shift, and goto state 29
+    OR   shift, and goto state 30
+
+state 61 // '(' FALSE ')'
+
+   16 ExprBool: '(' ExprBool ')' .  [$end, ')', ']', AND, OR]
+
+    $end  reduce using rule 16 (ExprBool)
+    ')'   reduce using rule 16 (ExprBool)
+    ']'   reduce using rule 16 (ExprBool)
+    AND   reduce using rule 16 (ExprBool)
+    OR    reduce using rule 16 (ExprBool)
+
+state 62 // ARRAYS LSS
+
+   10 ExprBool: ExprCalc LSS . ExprCalc  // assoc %left, prec 4
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 69
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 63 // ARRAYS LEQ
+
+   11 ExprBool: ExprCalc LEQ . ExprCalc  // assoc %left, prec 4
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 68
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 64 // ARRAYS GTR
+
+   12 ExprBool: ExprCalc GTR . ExprCalc  // assoc %left, prec 4
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 67
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 65 // ARRAYS GEQ
+
+   13 ExprBool: ExprCalc GEQ . ExprCalc  // assoc %left, prec 4
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+
+    Arrays    goto state 40
+    CalcCell  goto state 11
+    ExprCalc  goto state 66
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 66 // ARRAYS GEQ ARRAYS [$end]
+
+   13 ExprBool: ExprCalc GEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 13 (ExprBool)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 13 (ExprBool)
+    '*'   shift, and goto state 49
+    '+'   shift, and goto state 47
+    '-'   shift, and goto state 48
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 13 (ExprBool)
+    AND   reduce using rule 13 (ExprBool)
+    OR    reduce using rule 13 (ExprBool)
+
+state 67 // ARRAYS GTR ARRAYS [$end]
+
+   12 ExprBool: ExprCalc GTR ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 12 (ExprBool)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 12 (ExprBool)
+    '*'   shift, and goto state 49
+    '+'   shift, and goto state 47
+    '-'   shift, and goto state 48
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 12 (ExprBool)
+    AND   reduce using rule 12 (ExprBool)
+    OR    reduce using rule 12 (ExprBool)
+
+state 68 // ARRAYS LEQ ARRAYS [$end]
+
+   11 ExprBool: ExprCalc LEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 11 (ExprBool)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 11 (ExprBool)
+    '*'   shift, and goto state 49
+    '+'   shift, and goto state 47
+    '-'   shift, and goto state 48
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 11 (ExprBool)
+    AND   reduce using rule 11 (ExprBool)
+    OR    reduce using rule 11 (ExprBool)
+
+state 69 // ARRAYS LSS ARRAYS [$end]
+
+   10 ExprBool: ExprCalc LSS ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
+   20 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
+   21 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
+   22 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
+   23 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+
+    $end  reduce using rule 10 (ExprBool)
+    '%'   shift, and goto state 51
+    ')'   reduce using rule 10 (ExprBool)
+    '*'   shift, and goto state 49
+    '+'   shift, and goto state 47
+    '-'   shift, and goto state 48
+    '/'   shift, and goto state 50
+    ']'   reduce using rule 10 (ExprBool)
+    AND   reduce using rule 10 (ExprBool)
+    OR    reduce using rule 10 (ExprBool)
+
+state 70 // ARRAYS NEQ
+
+    8 ExprBool: BoolCell NEQ . BoolCell  // assoc %left, prec 3
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays    goto state 40
+    Bool      goto state 35
+    BoolCell  goto state 73
+    CalcCell  goto state 11
+    ExprCalc  goto state 36
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 71 // ARRAYS EQU
+
+    9 ExprBool: BoolCell EQU . BoolCell  // assoc %left, prec 3
+
+    '('     shift, and goto state 37
+    '-'     shift, and goto state 12
+    ARRAYS  shift, and goto state 20
+    FALSE   shift, and goto state 25
+    FLOAT   shift, and goto state 22
+    IDENT   shift, and goto state 18
+    INT     shift, and goto state 21
+    STRING  shift, and goto state 23
+    TRUE    shift, and goto state 24
+
+    Arrays    goto state 40
+    Bool      goto state 35
+    BoolCell  goto state 72
+    CalcCell  goto state 11
+    ExprCalc  goto state 36
+    ExprExt   goto state 28
+    ExprFunc  goto state 38
+    Float     goto state 16
+    Ident     goto state 39
+    Int       goto state 15
+    String    goto state 17
+
+state 72 // ARRAYS EQU ARRAYS [$end]
+
+    9 ExprBool: BoolCell EQU BoolCell .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+
+    $end  reduce using rule 9 (ExprBool)
+    ')'   reduce using rule 9 (ExprBool)
+    ']'   reduce using rule 9 (ExprBool)
+    AND   reduce using rule 9 (ExprBool)
+    OR    reduce using rule 9 (ExprBool)
+
+state 73 // ARRAYS NEQ ARRAYS [$end]
+
+    8 ExprBool: BoolCell NEQ BoolCell .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+
+    $end  reduce using rule 8 (ExprBool)
+    ')'   reduce using rule 8 (ExprBool)
+    ']'   reduce using rule 8 (ExprBool)
+    AND   reduce using rule 8 (ExprBool)
+    OR    reduce using rule 8 (ExprBool)
 

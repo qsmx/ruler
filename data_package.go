@@ -1,30 +1,30 @@
 package ruler
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
-	"fmt"
 )
 
 const data_stack_max_size = 20
 
 type DataPackage struct {
-	dataMap		map[string]interface{}
+	dataMap map[string]interface{}
 
-	dataStack	[]interface{}
-	pos 		int8
+	dataStack []interface{}
+	pos       int8
 }
 
 func NewDataPackage(data interface{}) *DataPackage {
 	if v, ok := data.(map[string]interface{}); ok {
 		dp := &DataPackage{
-			dataMap: v,
+			dataMap:   v,
 			dataStack: make([]interface{}, data_stack_max_size),
-			pos: 0,
+			pos:       0,
 		}
 
-        dp.dataStack[0] = &dp.dataMap
-        return dp
+		dp.dataStack[0] = &dp.dataMap
+		return dp
 	}
 
 	return nil

@@ -14,9 +14,9 @@ else
 SED 	:= sed -i
 endif
 
-all: filter.go hit.go tokenizer.go validate.go
-	@$(SED) -n "/^func filterParse/,/^}/p" filter.go
-	@$(SED) -n "/^func validateParse/,/^}/p" validate.go
+.PHONY: all test
+
+all: grammar.go tokenizer.go
 
 test: all
 	go test
@@ -25,13 +25,9 @@ test: all
 	$(LEX) -o $@ $<
 
 %.go: %.y
-	@cat yacc.spec.in $< > $<.tmp
-	$(YACC) -p $(basename $@) -o $@ $<.tmp
-	@rm $<.tmp
-ifneq ($@,validate.go)
-	@$(SED) '/func $(basename $@)Parse/s/)/, dp *DataPackage, res *bool&/' $@
-endif
+	$(YACC) -o $@ $<
+	$(SED) -e '/^func yyParse/s/)/, outNode **rulerNode&/' $@
 
 clean:
 	go clean
-	rm -f filter.go tokenizer.go hit.go validate.go
+	rm -f *.tmp filter.go tokenizer.go

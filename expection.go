@@ -3,15 +3,15 @@ package ruler
 import "fmt"
 
 const (
-	ERR_STATUS_NO_ATTR 		= 400 + iota 		// 无属性
-	ERR_STATUS_TYPE								// 不支持的类型转换
+	ERR_STATUS_NO_ATTR = 400 + iota // 无属性
+	ERR_STATUS_TYPE                 // 不支持的类型转换
 
-	ERR_STATUS_DATA_STACK 	= 500 				// 数据栈出现问题
+	ERR_STATUS_DATA_STACK = 500 // 数据栈出现问题
 )
 
 type RulerException struct {
-	code 	int
-	str 	string
+	code int
+	str  string
 }
 
 func throwException(code int, vfmt string, args ...interface{}) {
