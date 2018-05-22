@@ -2,29 +2,42 @@ package ruler
 
 import "fmt"
 
-func Validate(src string) bool {
-	defer func() {
-		if e := recover(); e != nil {
-			fmt.Println(e)
-			return
-		}
-	}()
-	return yyParse(newLexer(src), nil) == 0
+func Validate(src string) (RulerException, bool) {
+	return parse(src, nil)
 }
 
-func Parse(src string, data map[string]interface{}) bool {
+func Parse(src string) (e RulerException, ok bool) {
+	var node *rulerNode
+
+	if e, ok = parse(src, &node); !ok {
+		return
+	}
+
+	node.Debug()
+	return e, true
+}
+
+func parse(src string, node **rulerNode) (e RulerException, ok bool) {
+	//e = &RulerException{}
 	defer func() {
-		if e := recover(); e != nil {
-			fmt.Println(e)
+		switch err := recover(); err.(type) {
+		case nil:
 			return
+		case *RulerException:
+			e = *err.(*RulerException)
+		case error:
+			e = RulerException{code: 500, str: err.(error).Error()}
+		case string:
+			e = RulerException{code: 500, str: err.(string)}
+		default:
+			e = RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
 		}
+
+		fmt.Println(e, &e)
+		ok = false
 	}()
 
-	var node *rulerNode
-	yyParse(newLexer(src), &node)
-	if node == nil {
-		return false
-	}
-	node.Debug()
-	return true
+	ok = yyParse(newLexer(src), node) == 0
+
+	return
 }

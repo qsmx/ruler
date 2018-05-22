@@ -24,6 +24,7 @@ func (y *yylexer) getc() byte {
         y.current = b
         y.pos++
     }
+
     return y.current
 }
 
@@ -76,6 +77,10 @@ false           return FALSE
 
 %%
     y.empty = true
+    fmt.Printf("%s", y.buf);
+    if len(y.buf) != 0 {
+        throwException(ERR_STATUS_ABORT, "token错误：%s", y.buf)
+    }
     return int(c)
 }
 

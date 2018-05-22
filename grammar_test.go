@@ -2,39 +2,42 @@ package ruler
 
 import (
 	"testing"
+	"fmt"
 )
 
-var rulerList []string
+var rulerList [][]interface{}
 var data map[string]interface{}
 
-func TestParse(t *testing.T) {
-	for _, v := range rulerList {
-		if Parse(v, data) {
-			t.Log("Parse:", v, "OK")
-		} else {
-			t.Error("Parse:", v, "Error")
-		}
-	}
-}
+// func TestParse(t *testing.T) {
+// 	for _, v := range rulerList {
+// 		if Parse(v, data) {
+// 			t.Log("Parse:", v, "OK")
+// 		} else {
+// 			t.Error("Parse:", v, "Error")
+// 		}
+// 	}
+// }
 
 func TestValidate(t *testing.T) {
 	for _, v := range rulerList {
-		if Validate(v) {
+		if e, ok := Validate(v[0].(string)); ok == v[1].(bool) {
 			t.Log(v, "OK")
 		} else {
-			t.Error(v, "Error")
+			fmt.Println(e, &e)
+			t.Error(v, e)
 		}
 	}
 }
 
 func init() {
-	rulerList = []string {
-		"abc == 10",
-		"a",
-		"abc[ff>10||kk==10]",
-		"mm > 10 && a != 10 || af < 10",
-        `abc(hello, "hello-\"world")`,
-        `1"abc == 19`,
+	rulerList = [][]interface{} {
+		{"abc == 10", true},
+		{"a", true},
+		{"abc[ff>10||kk==10]", true},
+		{"mm > 10 && a != 10 || af < 10", true},
+        {`abc(hello, "hello-\"world")`, true},
+        {`"abcde`, false},
+        {"1234345 ==", true},
 	}
 
     data = map[string]interface{} {
