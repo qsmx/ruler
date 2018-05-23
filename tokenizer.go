@@ -2,17 +2,12 @@
 
 package ruler
 
-import (
-	"bufio"
-	"bytes"
-	"fmt"
-)
-
 type yylexer struct {
-	src     *bufio.Reader
+	src     string
 	buf     []byte
 	empty   bool
 	current byte
+	size    int
 	pos     int
 }
 
@@ -21,16 +16,16 @@ func (y *yylexer) getc() byte {
 		y.buf = append(y.buf, y.current)
 	}
 	y.current = 0
-	if b, err := y.src.ReadByte(); err == nil {
-		y.current = b
+	if y.pos < y.size {
+		y.current = y.src[y.pos]
 		y.pos++
 	}
 
 	return y.current
 }
 
-func (y yylexer) Error(e string) {
-	fmt.Printf("pos: %v '%c'\n", y.pos, y.current)
+func (y yylexer) Error(string) {
+	throwException(ERR_STATUS_ABORT, "ruler[%s] buf[%s] pos[%d]", y.src, string(y.buf), y.pos)
 }
 
 func (y *yylexer) Lex(lval *yySymType) int {
@@ -70,11 +65,11 @@ yystart1:
 	case c == '\t' || c == '\r' || c == ' ':
 		goto yystate2
 	case c == 'f':
-		goto yystate25
+		goto yystate27
 	case c == 't':
-		goto yystate30
+		goto yystate32
 	case c == '|':
-		goto yystate34
+		goto yystate36
 	case c >= '0' && c <= '9':
 		goto yystate15
 	case c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'e' || c >= 'g' && c <= 's' || c >= 'u' && c <= 'z':
@@ -278,6 +273,8 @@ yystate24:
 		goto yyrule15
 	case c == '.':
 		goto yystate13
+	case c == '|':
+		goto yystate25
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate24
 	}
@@ -286,26 +283,22 @@ yystate25:
 	c = y.getc()
 	switch {
 	default:
-		goto yyrule15
-	case c == '.':
-		goto yystate13
-	case c == 'a':
+		goto yyabort
+	case c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate26
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate24
 	}
 
 yystate26:
 	c = y.getc()
 	switch {
 	default:
-		goto yyrule15
+		goto yyabort
 	case c == '.':
 		goto yystate13
-	case c == 'l':
-		goto yystate27
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate24
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate26
 	}
 
 yystate27:
@@ -315,9 +308,11 @@ yystate27:
 		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c == 's':
+	case c == 'a':
 		goto yystate28
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
 		goto yystate24
 	}
 
@@ -328,9 +323,11 @@ yystate28:
 		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c == 'e':
+	case c == 'l':
 		goto yystate29
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
 		goto yystate24
 	}
 
@@ -338,10 +335,14 @@ yystate29:
 	c = y.getc()
 	switch {
 	default:
-		goto yyrule11
+		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+	case c == 's':
+		goto yystate30
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
 		goto yystate24
 	}
 
@@ -352,9 +353,11 @@ yystate30:
 		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c == 'r':
+	case c == 'e':
 		goto yystate31
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate24
 	}
 
@@ -362,12 +365,12 @@ yystate31:
 	c = y.getc()
 	switch {
 	default:
-		goto yyrule15
+		goto yyrule11
 	case c == '.':
 		goto yystate13
-	case c == 'u':
-		goto yystate32
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate24
 	}
 
@@ -378,9 +381,11 @@ yystate32:
 		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c == 'e':
+	case c == 'r':
 		goto yystate33
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
 		goto yystate24
 	}
 
@@ -388,10 +393,14 @@ yystate33:
 	c = y.getc()
 	switch {
 	default:
-		goto yyrule10
+		goto yyrule15
 	case c == '.':
 		goto yystate13
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+	case c == 'u':
+		goto yystate34
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
 		goto yystate24
 	}
 
@@ -399,12 +408,42 @@ yystate34:
 	c = y.getc()
 	switch {
 	default:
-		goto yyabort
-	case c == '|':
+		goto yyrule15
+	case c == '.':
+		goto yystate13
+	case c == 'e':
 		goto yystate35
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate24
 	}
 
 yystate35:
+	c = y.getc()
+	switch {
+	default:
+		goto yyrule10
+	case c == '.':
+		goto yystate13
+	case c == '|':
+		goto yystate25
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate24
+	}
+
+yystate36:
+	c = y.getc()
+	switch {
+	default:
+		goto yyabort
+	case c == '|':
+		goto yystate37
+	case c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate24
+	}
+
+yystate37:
 	c = y.getc()
 	goto yyrule9
 
@@ -487,18 +526,18 @@ yyrule16: // {arrays}
 
 yyabort: // no lexem recognized
 	y.empty = true
-	fmt.Printf("%s", y.buf)
 	if len(y.buf) != 0 {
-		throwException(ERR_STATUS_ABORT, "token错误：%s", y.buf)
+		y.Error("")
 	}
 	return int(c)
 }
 
-func newLexer(str string) (y *yylexer) {
-	src := bufio.NewReader(bytes.NewBufferString(str))
-	y = &yylexer{src: src}
-	if b, err := src.ReadByte(); err == nil {
-		y.current = b
+func newLexer(src string) (y *yylexer) {
+	y = &yylexer{
+		src:     src,
+		size:    len(src),
+		pos:     1,
+		current: src[0],
 	}
 	return
 }

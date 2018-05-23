@@ -13,7 +13,7 @@ package ruler
 %token  INT, FLOAT, TRUE, FALSE, STRING, IDENT, ARRAYS
 %token  EQU, NEQ, LSS, LEQ, GTR, GEQ
 %token  AND, OR, IN, NOTIN
-%token  FUNC, SKIPED, FILTER
+%token  FUNC, ARGS, FILTER
 
 %left   OR
 %left   AND
@@ -29,7 +29,7 @@ package ruler
 %type   <ruler>     Expr, ExprExt
 %type   <ruler>     ExprBool, BoolCell, Bool
 %type   <ruler>     ExprCalc, CalcCell
-%type   <ruler>     ExprFilter, FilterName, FilterCond
+%type   <ruler>     ExprFilter, FilterName
 %type   <ruler>     ExprFunc, Args
 
 %%
@@ -74,26 +74,23 @@ ExprExt: Ident
     | Float
     | String
 
-ExprFunc: IDENT '(' Args ')'    { $$ = nodeFromNode(FUNC, nodeFromString(STRING, $1), $3) }
+ExprFunc: IDENT '(' ')'         { $$ = nodeFromString(FUNC, $1) }
+    | IDENT '(' Args ')'        { $$ = nodeFromString(FUNC, $1); $$.ReplaceNode($3) }
 
-Args: /* empty */               { }
-    | BoolCell                  { $$ = nodeFromNode(SKIPED, $1) }
+Args: BoolCell                  { $$ = nodeFromNode(ARGS, $1) }
     | Args ',' BoolCell         { $$ = $$.AppendNode($3) }
 
-ExprFilter: FilterName '[' ExprBool ']'  { $$ = nodeFromNode(FILTER, $1, $3) }
+ExprFilter: FilterName '[' ExprBool ']'  { $$ = nodeFromNode(FILTER, $1); $$.AppendNode($3) }
 
 FilterName: Ident
     | Arrays
 
-FilterCond: ExprBool    { $$ = nodeFromNode(SKIPED, $1) }
-    | FilterCond ',' ExprBool   { $$ = $$.AppendNode($3) }
-
 Ident: IDENT            { $$ = nodeFromIdent(IDENT, $1) }
 Arrays: ARRAYS          { $$ = nodeFromIdent(ARRAYS, $1) }
-Int: INT                { $$ = nodeFromInt(INT, $1) }
-Float: FLOAT            { $$ = nodeFromFloat(FLOAT, $1) }
+Int: INT                { $$ = nodeFromInt(ConvertInt($1)) }
+Float: FLOAT            { $$ = nodeFromFloat(ConvertFloat($1)) }
 String: STRING          { $$ = nodeFromString(STRING, $1) }
-Bool: TRUE              { $$ = nodeFromBool(TRUE, true)  }
-    | FALSE             { $$ = nodeFromBool(FALSE, false) }
+Bool: TRUE              { $$ = nodeFromBool(true)  }
+    | FALSE             { $$ = nodeFromBool(false) }
 
 %%

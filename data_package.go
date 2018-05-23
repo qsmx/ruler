@@ -3,6 +3,7 @@ package ruler
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"strconv"
 )
 
@@ -15,19 +16,30 @@ type DataPackage struct {
 	pos       int8
 }
 
-func NewDataPackage(data interface{}) *DataPackage {
-	if v, ok := data.(map[string]interface{}); ok {
-		dp := &DataPackage{
-			dataMap:   v,
-			dataStack: make([]interface{}, data_stack_max_size),
-			pos:       0,
-		}
-
-		dp.dataStack[0] = &dp.dataMap
-		return dp
+func NewDataPackage(data interface{}) (dp *DataPackage) {
+	dp = &DataPackage{
+		dataStack: make([]interface{}, data_stack_max_size),
+		pos:       0,
 	}
 
-	return nil
+	switch data.(type) {
+	case string:
+		dp.dataMap[data.(string)] = data
+
+	// go里面转换json时除非明确指定类型为 map[int]interface{}
+	// 何必做多余的事呢
+	//case map[int]interface{}:
+	//	   throwException(500, "不支持 map[int]interface{}")
+
+	case map[string]interface{}:
+		dp.dataMap = data.(map[string]interface{})
+
+	default:
+		throwException(500, "不支持的源数据类型 %T, %+v", data, data)
+	}
+
+	dp.dataStack[0] = &dp.dataMap
+	return
 }
 
 func (dp *DataPackage) Pre() {
@@ -54,24 +66,64 @@ func (dp *DataPackage) Next(name string) {
 	//}
 }
 
+func (dp DataPackage) GetDeepAttr(name string) interface{} {
+	var v interface{}
+
+	names := strings.Split(name, ".")
+	v = dp.dataStack[dp.pos]
+
+	for _, key := range names {
+		fmt.Printf("key: %s, from val = %+v\n", key, v)
+		switch v.(type) {
+		case map[string]interface{}:
+			data := v.(map[string]interface{})
+			v = valFromAttr(key, &data)
+		case *map[string]interface{}:
+			data := v.(*map[string]interface{})
+			v = valFromAttr(key, data)
+		default:
+			throwException(500, "错误的类型：%T, %+v", v, v)
+		}
+	}
+
+	return v
+}
+
 func (dp DataPackage) GetAttr(name string) interface{} {
 	v := dp.dataStack[dp.pos]
 
 	switch v.(type) {
 	case *map[string]interface{}:
 		return getAttr(name, v.(*map[string]interface{}))
+	default:
+		throwException(500, "错误的类型：%T, %+v", v, v)
 	}
 
 	return nil
 }
 
-func getAttr(name string, data *map[string]interface{}) interface{} {
-	if v, ok := (*data)[name]; ok {
-		return v
+func valFromAttr(name string, data *map[string]interface{}) interface{} {
+	v, ok := (*data)[name]
+	if !ok {
+		throwException(ERR_STATUS_NO_ATTR, "无属性值：%s", name)
 	}
 
-	throwException(ERR_STATUS_NO_ATTR, "无属性值：%s", name)
-	return nil
+	return v
+}
+
+func ValueFormat(v interface{}) interface{} {
+	switch v.(type) {
+	case int8, int16, int32, int, uint8, uint16, uint32, uint64, uint:
+		return ConvertInt(v)
+	case float32:
+		return ConvertFloat(v)
+	default:
+		return v
+	}
+}
+
+func getAttr(name string, data *map[string]interface{}) interface{} {
+	return ValueFormat(valFromAttr(name, data))
 }
 
 func (dp DataPackage) GetBool(name string) bool {
@@ -108,12 +160,12 @@ func ConvertBool(v interface{}) bool {
 		return v.(string) != ""
 	case int8, int16, int32, int64, int, uint8, uint16, uint32, uint64, uint, float32, float64:
 		return ConvertFloat(v) != 0.0
-	}
-
-	w := reflect.ValueOf(v)
-	switch w.Kind() {
-	case reflect.Array, reflect.Slice:
-		return w.Len() > 0
+	default:
+		w := reflect.ValueOf(v)
+		switch w.Kind() {
+		case reflect.Array, reflect.Slice, reflect.Map:
+			return w.Len() > 0
+		}
 	}
 
 	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 bool", v)
@@ -172,19 +224,4 @@ func ConvertString(v interface{}) string {
 
 	throwException(ERR_STATUS_TYPE, "不支持 %v 转换为 string", v)
 	return ""
-}
-
-func ConvertType(a, b interface{}) (m, n interface{}) {
-	m, ais := a.(float64)
-	n, bis := b.(float64)
-	if ais || bis {
-		if !ais {
-			m = ConvertFloat(a)
-		}
-		if !bis {
-			n = ConvertFloat(b)
-		}
-	}
-
-	return
 }
