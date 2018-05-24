@@ -43,10 +43,10 @@ func TestParse(t *testing.T) {
 
 func init() {
 	rulerList = [][]interface{} {
-		{`int("123") == 123`, true, true},
-		{`int("123") == 12`, true, true},
-		{`he()`, true, true},
-		{`he1(1, 3)`, true, true},
+		{`int(string(123)) % cde.a.kk == 3`, true, true},
+		//{`int("123") == 12`, true, true},
+		//{`he()`, true, true},
+		//{`he1(1, 3)`, true, true},
 		//{`h1 == 1.2 || h2 == 100`, true, true},
 		//{"cde.a.hello == 10", true, true},
 		//{"a", true, true},
@@ -71,6 +71,7 @@ func init() {
 			"a": map[string]interface{} {
 				"hello": "world",
 				"world": "!",
+				"kk": 12,
 			},
 		},
         "h1": 1.2,
@@ -85,10 +86,12 @@ func init() {
 	Bind("he1", Hello1)
 }
 
-func Hello() {
+func Hello() int {
 	fmt.Println("Call builtin: Hello")
+	return 1
 }
 
-func Hello1(a, b int64) {
+func Hello1(a, b int64) int64 {
 	fmt.Println("Call builtin: Hello1", a, b)
+	return a + b
 }

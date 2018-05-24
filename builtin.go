@@ -9,14 +9,14 @@ type funcsCallback map[string]reflect.Value
 var funcs funcsCallback
 
 func Bind(name string, fn interface{}) (err error) {
-	defer func() {
-		if e := recover(); e != nil {
-			throwException(500, "%s 不是函数", name)
-		}
-	}()
-
 	v := reflect.ValueOf(fn)
-	v.Type().NumIn()
+	if v.Kind() != reflect.Func {
+		throwException(500, "%s 不是函数", name)
+	}
+
+	if n := v.Type().NumOut(); n != 1 {
+		throwException(500, "注册函数必须返回一个值 %s: %d", name, n)
+	}
 	funcs[name] = v
 
 	return

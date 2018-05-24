@@ -29,6 +29,25 @@ type rulerNode struct {
 	node []*rulerNode
 }
 
+func nodeFromInterface(v interface{}) (r *rulerNode) {
+	val := ValueFormat(v)
+
+	switch val.(type) {
+	case int64:
+		r = nodeFromInt(val.(int64))
+	case string:
+		r = nodeFromString(STRING, val.(string))
+	case float64:
+		r = nodeFromFloat(val.(float64))
+	case bool:
+		r = nodeFromBool(val.(bool))
+	default:
+		throwException(500, "不支持的自动转换 %T, %+v", val, val)
+	}
+
+	return r
+}
+
 func nodeFromNode(op int, n ...*rulerNode) *rulerNode {
 	r := &rulerNode{
 		op: op,
@@ -169,17 +188,17 @@ func calc(op int, l, r interface{}) *rulerNode {
 		return nodeFromString(STRING, result.(string))
 	}
 
-	throwException(500, "不支持的运算类型 %T %c[%d] %T", l, op, op, r)
+	throwException(500, "不支持的运算类型 %T %c[%d] %T, result = %T, %v", l, op, op, r, result, result)
 	return nil
 }
 
 func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
     switch r.op {
 	case IDENT:
-		r.value = dp.GetAttr(r.value.(string))
+		r.value = ValueFormat(dp.GetAttr(r.value.(string)))
 		fmt.Println("Ident:", r.value)
 	case ARRAYS:
-		r.value = dp.GetDeepAttr(r.value.(string))
+		r.value = ValueFormat(dp.GetDeepAttr(r.value.(string)))
 		fmt.Println("Arrays:", r.value)
 	case NEG:
 		switch r.typ {
@@ -198,19 +217,20 @@ func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
 		return nodeFromBool(r.value != v.value)
 
 	case '+', '-', '*', '/', '%', LSS, LEQ, GTR, GEQ:
-		r, v := r.node[0].Exec(dp), r.node[1].Exec(dp)
-		left, right := r, v
+		left, right := r.node[0].Exec(dp), r.node[1].Exec(dp)
 
-		if r.typ != v.typ {
-			switch r.typ {
+		if left.typ != right.typ {
+			switch left.typ {
 			case reflect.Int64:
-				if v.typ == reflect.Float64 {
+				if right.typ == reflect.Float64 {
 					left = nodeFromFloat(float64(r.value.(int64)))
+				} else {
+					right = nodeFromInt(ConvertInt(right.value))
 				}
 			case reflect.Float64:
-				right = nodeFromFloat(ConvertFloat(v.value))
+				right = nodeFromFloat(ConvertFloat(left.value))
 			case reflect.String:
-				right = nodeFromString(STRING, ConvertString(v.value))
+				right = nodeFromString(STRING, ConvertString(left.value))
 			}
 		}
 
@@ -238,8 +258,7 @@ func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
 			}
 
 			res := Call(r.value.(string), args...)
-			fmt.Println(res)
-			return nodeFromInt(123123)
+			return nodeFromInterface(res)
 		}
 
 	case FILTER:

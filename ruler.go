@@ -32,23 +32,23 @@ func parseone(src string, dp *DataPackage) (e interface{}, ok bool) {
 	if e, ok = parse(src, &node); !ok {
 		return
 	}
-	//
-	//defer func() {
-	//	switch err := recover(); err.(type) {
-	//	case nil:
-	//		return
-	//	case *RulerException:
-	//		e = *err.(*RulerException)
-	//	case error:
-	//		e = RulerException{code: 500, str: err.(error).Error()}
-	//	case string:
-	//		e = RulerException{code: 500, str: err.(string)}
-	//	default:
-	//		e = RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
-	//	}
-	//
-	//	ok = false
-	//}()
+
+	defer func() {
+		switch err := recover(); err.(type) {
+		case nil:
+			return
+		case *RulerException:
+			e = *err.(*RulerException)
+		case error:
+			e = RulerException{code: 500, str: err.(error).Error()}
+		case string:
+			e = RulerException{code: 500, str: err.(string)}
+		default:
+			e = RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
+		}
+
+		ok = false
+	}()
 
 	res := node.Exec(dp)
 	fmt.Println(" *** RES = ", res.Value())
@@ -56,22 +56,22 @@ func parseone(src string, dp *DataPackage) (e interface{}, ok bool) {
 }
 
 func parse(src string, node **rulerNode) (e RulerException, ok bool) {
-	//defer func() {
-	//	switch err := recover(); err.(type) {
-	//	case nil:
-	//		return
-	//	case *RulerException:
-	//		e = *err.(*RulerException)
-	//	case error:
-	//		e = RulerException{code: 500, str: err.(error).Error()}
-	//	case string:
-	//		e = RulerException{code: 500, str: err.(string)}
-	//	default:
-	//		e = RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
-	//	}
-	//
-	//	ok = false
-	//}()
+	defer func() {
+		switch err := recover(); err.(type) {
+		case nil:
+			return
+		case *RulerException:
+			e = *err.(*RulerException)
+		case error:
+			e = RulerException{code: 500, str: err.(error).Error()}
+		case string:
+			e = RulerException{code: 500, str: err.(string)}
+		default:
+			e = RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
+		}
+
+		ok = false
+	}()
 
 	ok = yyParse(newLexer(src), node) == 0
 
