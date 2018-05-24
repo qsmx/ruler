@@ -42,7 +42,16 @@ func nodeFromInterface(v interface{}) (r *rulerNode) {
 	case bool:
 		r = nodeFromBool(val.(bool))
 	default:
-		throwException(500, "不支持的自动转换 %T, %+v", val, val)
+		kind := reflect.ValueOf(val).Kind()
+		switch kind {
+		case reflect.Slice, reflect.Array, reflect.Map:
+			r = &rulerNode{
+				typ: kind,
+				value: val,
+			}
+		default:
+			throwException(500, "不支持的自动转换 %T, %+v", val, val)
+		}
 	}
 
 	return r
@@ -180,6 +189,8 @@ func calc(op int, l, r interface{}) *rulerNode {
 	}
 
 	switch result.(type) {
+	case bool:
+		return nodeFromBool(result.(bool))
 	case int64:
 		return nodeFromInt(result.(int64))
 	case float64:
@@ -188,18 +199,28 @@ func calc(op int, l, r interface{}) *rulerNode {
 		return nodeFromString(STRING, result.(string))
 	}
 
-	throwException(500, "不支持的运算类型 %T %c[%d] %T, result = %T, %v", l, op, op, r, result, result)
+	throwException(500, "不支持的运算类型 %T %d[%s] %T, result = %T, %v", l, op, yySymNames[yyXLAT[op]], r, result, result)
 	return nil
 }
 
 func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
     switch r.op {
 	case IDENT:
-		r.value = ValueFormat(dp.GetAttr(r.value.(string)))
-		fmt.Println("Ident:", r.value)
+		var val interface{}
+		s := r.value.(string)
+		if s[0] == '|' {
+			val = dp.GetBaseAttr(s[1:])
+		} else {
+			val = dp.GetAttr(s)
+		}
+
+		fmt.Printf("Ident: %T, %v\n", val, val)
+		return nodeFromInterface(val)
 	case ARRAYS:
-		r.value = ValueFormat(dp.GetDeepAttr(r.value.(string)))
-		fmt.Println("Arrays:", r.value)
+		val := dp.GetDeepAttr(r.value.(string))
+		fmt.Printf("Arrays: %T, %v\n", val, val)
+		return nodeFromInterface(dp.GetDeepAttr(r.value.(string)))
+
 	case NEG:
 		switch r.typ {
 		case reflect.Int64:
@@ -223,14 +244,14 @@ func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
 			switch left.typ {
 			case reflect.Int64:
 				if right.typ == reflect.Float64 {
-					left = nodeFromFloat(float64(r.value.(int64)))
+					left = nodeFromFloat(float64(left.value.(int64)))
 				} else {
 					right = nodeFromInt(ConvertInt(right.value))
 				}
 			case reflect.Float64:
-				right = nodeFromFloat(ConvertFloat(left.value))
+				right = nodeFromFloat(ConvertFloat(right.value))
 			case reflect.String:
-				right = nodeFromString(STRING, ConvertString(left.value))
+				right = nodeFromString(STRING, ConvertString(right.value))
 			}
 		}
 
@@ -262,8 +283,38 @@ func (r *rulerNode) Exec(dp *DataPackage) (* rulerNode) {
 		}
 
 	case FILTER:
-		fmt.Println("Filter: ", r.node[0], "Args:", r.node[1:])
-    }
+		name := r.node[0].value
+		data := reflect.ValueOf(r.node[0].Exec(dp).value)
+		if data.Kind() != reflect.Slice {
+			throwException(500, "%s 不是数组数据，无法过滤", name)
+		}
+
+		size := data.Len()
+		res := make([]bool, size)
+		for i := 0; i < size; i++ {
+			fmt.Println(" filter: => ", data.Index(i).Interface())
+			dp.Push(data.Index(i).Interface())
+			fmt.Printf("%+v\n", *r.node[1])
+			res[i] = ConvertBool(r.node[1].Exec(dp).value)
+			dp.Pop()
+		}
+
+		return nodeFromInterface(res)
+
+	case LISTA:
+		if ConvertBool(r.node[0].Exec(dp).value) {
+			return r.node[1].Exec(dp)
+		} else {
+			return nodeFromBool(false)
+		}
+
+	case LISTO:
+		if ConvertBool(r.node[0].Exec(dp).value) {
+			return nodeFromBool(true)
+		} else {
+			return r.node[1].Exec(dp)
+		}
+	}
 
     return r
 }

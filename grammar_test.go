@@ -43,14 +43,14 @@ func TestParse(t *testing.T) {
 
 func init() {
 	rulerList = [][]interface{} {
-		{`int(string(123)) % cde.a.kk == 3`, true, true},
 		//{`int("123") == 12`, true, true},
 		//{`he()`, true, true},
 		//{`he1(1, 3)`, true, true},
 		//{`h1 == 1.2 || h2 == 100`, true, true},
 		//{"cde.a.hello == 10", true, true},
 		//{"a", true, true},
-		//{"abc[|ff>10||kk==10]", true, true},
+		{"abc[a!=10]", true, true},
+		{"h1 > 1 && abc[a!=10]", true, true},
 		//{"mm > 10 && a != 10 || af < 10", true, true},
         //{`abc(hello, "hello-\"world")`, true, true},
         //{`"abcde`, false, false},
@@ -62,10 +62,6 @@ func init() {
             {"a": 10, "b": 20},
             {"a": 101, "b": 201},
             {"a": 111, "b": 221},
-            {"a": map[string]interface{} {
-				"hello": "world",
-				"world": "!",
-			}},
         },
 		"cde": map[string]interface{} {
 			"a": map[string]interface{} {

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"strconv"
+	"os"
 )
 
 const data_stack_max_size = 20
@@ -42,28 +43,24 @@ func NewDataPackage(data interface{}) (dp *DataPackage) {
 	return
 }
 
-func (dp *DataPackage) Pre() {
+func (dp *DataPackage) Pop() {
 	if dp.pos == 0 {
 		throwException(ERR_STATUS_DATA_STACK, "数据栈错误")
+		os.Exit(-1)
 	}
 
 	dp.pos--
 }
 
-func (dp *DataPackage) Next(name string) {
-	d := dp.GetAttr(name)
-
-	fmt.Printf("%T, %+v\n", d, d)
-
-	v, _ := d.([]map[string]interface{})
-	dp.pos++
-	dp.dataStack[dp.pos] = &(v[0])
-
-	//switch reflect.ValueOf(d).Kind() {
-	//case reflect.Slice, reflect.Array:
-	//	dp.pos++
-	//	dp.dataStack[dp.pos] = &d
-	//}
+func (dp *DataPackage) Push(v interface{}) {
+	switch v.(type) {
+	case map[string]interface{}:
+		data := v.(map[string]interface{})
+		dp.pos++
+		dp.dataStack[dp.pos] = &data
+	default:
+		throwException(500, "push 只支持 map[string]interface{}：%T, %+v", v, v)
+	}
 }
 
 func (dp DataPackage) GetDeepAttr(name string) interface{} {
@@ -87,6 +84,10 @@ func (dp DataPackage) GetDeepAttr(name string) interface{} {
 	}
 
 	return v
+}
+
+func (dp DataPackage) GetBaseAttr(name string) interface{} {
+	return getAttr(name, &dp.dataMap)
 }
 
 func (dp DataPackage) GetAttr(name string) interface{} {

@@ -22,5 +22,24 @@ func throwException(code int, vfmt string, args ...interface{}) {
 		v = fmt.Sprintf(vfmt, args...)
 	}
 
+	fmt.Println(v)
 	panic(&RulerException{code: code, str: v})
+}
+
+func cateException(e *RulerException, ok *bool) {
+	switch err := recover(); err.(type) {
+	case nil:
+		return
+	case *RulerException:
+		e = err.(*RulerException)
+	case error:
+		e = &RulerException{code: 500, str: err.(error).Error()}
+	case string:
+		e = &RulerException{code: 500, str: err.(string)}
+	default:
+		e = &RulerException{code: 500, str: fmt.Sprintf("未知错误 %T, %v", err, err)}
+	}
+
+	*ok = false
+	fmt.Println(&e, *ok)
 }

@@ -13,7 +13,7 @@ package ruler
 %token  INT, FLOAT, TRUE, FALSE, STRING, IDENT, ARRAYS
 %token  EQU, NEQ, LSS, LEQ, GTR, GEQ
 %token  AND, OR, IN, NOTIN
-%token  FUNC, ARGS, FILTER
+%token  FUNC, ARGS, FILTER, LISTA, LISTO
 
 %left   OR
 %left   AND
@@ -29,7 +29,7 @@ package ruler
 %type   <ruler>     Expr, ExprExt
 %type   <ruler>     ExprBool, BoolCell, Bool
 %type   <ruler>     ExprCalc, CalcCell
-%type   <ruler>     ExprFilter, FilterName
+%type   <ruler>     ExprList, ExprFilter, FilterCell, FilterName
 %type   <ruler>     ExprFunc, Args
 
 %%
@@ -39,10 +39,13 @@ Input:    /* empty */ { }
 
 Expr: ExprBool
     | ExprExt
+    | ExprList
+
+ExprList: FilterCell
+    | ExprFilter
 
 ExprBool: Bool
     | ExprFunc
-    | ExprFilter
     | BoolCell NEQ BoolCell     { $$ = nodeFromNode(NEQ, $1, $3) }
     | BoolCell EQU BoolCell     { $$ = nodeFromNode(EQU, $1, $3) }
     | ExprCalc LSS ExprCalc     { $$ = nodeFromNode(LSS, $1, $3) }
@@ -80,7 +83,13 @@ ExprFunc: IDENT '(' ')'         { $$ = nodeFromString(FUNC, $1) }
 Args: BoolCell                  { $$ = nodeFromNode(ARGS, $1) }
     | Args ',' BoolCell         { $$ = $$.AppendNode($3) }
 
-ExprFilter: FilterName '[' ExprBool ']'  { $$ = nodeFromNode(FILTER, $1); $$.AppendNode($3) }
+ExprFilter: FilterCell AND ExprBool   { $$ = nodeFromNode(LISTA, $3); $$.AppendNode($1) }
+    | FilterCell OR ExprBool    { $$ = nodeFromNode(LISTO, $3); $$.AppendNode($1) }
+    | ExprBool AND FilterCell   { $$ = nodeFromNode(LISTA, $1); $$.AppendNode($3) }
+    | ExprBool OR FilterCell    { $$ = nodeFromNode(LISTO, $1); $$.AppendNode($3) }
+    | '(' ExprFilter ')'        { $$ = $2 }
+
+FilterCell: FilterName '[' ExprBool ']'  { $$ = nodeFromNode(FILTER, $1); $$.AppendNode($3) }
 
 FilterName: Ident
     | Arrays
