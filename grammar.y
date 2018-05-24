@@ -30,7 +30,7 @@ package ruler
 %type   <ruler>     ExprBool, BoolCell, Bool
 %type   <ruler>     ExprCalc, CalcCell
 %type   <ruler>     ExprList, ExprFilter, FilterCell, FilterName
-%type   <ruler>     ExprFunc, Args
+%type   <ruler>     ExprFunc, Args, InArgs
 
 %%
 
@@ -46,6 +46,8 @@ ExprList: FilterCell
 
 ExprBool: Bool
     | ExprFunc
+    | Ident IN '(' InArgs ')'       { $$ = nodeFromString(IN, "i"); $$.AppendNode($1, $4) }
+    | Ident NOTIN '(' InArgs ')'    { $$ = nodeFromString(IN, "n"); $$.AppendNode($1, $4) }
     | BoolCell NEQ BoolCell     { $$ = nodeFromNode(NEQ, $1, $3) }
     | BoolCell EQU BoolCell     { $$ = nodeFromNode(EQU, $1, $3) }
     | ExprCalc LSS ExprCalc     { $$ = nodeFromNode(LSS, $1, $3) }
@@ -71,6 +73,9 @@ ExprCalc: CalcCell
 CalcCell: ExprExt
     | ExprFunc
 
+InArgs: ExprExt                 { $$ = nodeFromNode(ARGS, $1) }
+    |InArgs ',' ExprExt         { $$ = $$.AppendNode($3) }
+
 ExprExt: Ident
     | Arrays
     | Int
@@ -95,6 +100,8 @@ FilterName: Ident
     | Arrays
 
 Ident: IDENT            { $$ = nodeFromIdent(IDENT, $1) }
+    | IN                { $$ = nodeFromIdent(IDENT, "in") }
+    | NOTIN             { $$ = nodeFromIdent(IDENT, "notin") }
 Arrays: ARRAYS          { $$ = nodeFromIdent(ARRAYS, $1) }
 Int: INT                { $$ = nodeFromInt(ConvertInt($1)) }
 Float: FLOAT            { $$ = nodeFromFloat(ConvertFloat($1)) }

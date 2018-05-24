@@ -2,10 +2,10 @@ package ruler
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
-	"strconv"
 	"os"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 const data_stack_max_size = 20

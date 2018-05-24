@@ -8,7 +8,13 @@ type funcsCallback map[string]reflect.Value
 
 var funcs funcsCallback
 
+var keywords map[string]bool
+
 func Bind(name string, fn interface{}) (err error) {
+	if _, ok := keywords[name]; ok {
+		throwException(500, "不能注册函数 %s", name)
+	}
+
 	v := reflect.ValueOf(fn)
 	if v.Kind() != reflect.Func {
 		throwException(500, "%s 不是函数", name)
@@ -40,10 +46,18 @@ func Call(name string, params ...interface{}) (result []reflect.Value) {
 }
 
 func Caller(name string, params ...interface{}) interface{} {
-	v := Call(name, params ...)
+	v := Call(name, params...)
 	return v[0].Interface()
 }
 
 func init() {
 	funcs = make(funcsCallback)
+	keywords = map[string]bool {
+		"int": true,
+		"float": true,
+		"string": true,
+		"bool": true,
+		"in": true,
+		"notin": true,
+	}
 }

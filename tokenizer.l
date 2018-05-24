@@ -64,6 +64,8 @@ stringcell      [^"]*
 
 true            return TRUE
 false           return FALSE
+in              return IN
+notin           return NOTIN
 
 {string}        lval.value = string(y.buf[1:len(y.buf)-1]); return STRING
 {int}           lval.value = string(y.buf); return INT
