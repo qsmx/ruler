@@ -17,8 +17,7 @@ package ruler
 
 %left   OR
 %left   AND
-%left   EQU NEQ
-%left   LSS LEQ GTR GEQ
+%left   EQU NEQ LSS LEQ GTR GEQ
 %left   '-' '+'
 %left   '*' '/' '%'
 %left   NEG     /* negation--unary minus */

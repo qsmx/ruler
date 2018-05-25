@@ -169,16 +169,16 @@ state 11 // ARRAYS [EQU]
 
 state 12 // ARRAYS ['%']
 
-   14 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 4
-   15 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 4
-   16 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 4
-   17 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 4
+   14 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 3
+   15 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 3
+   16 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 3
+   17 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 3
    22 BoolCell: ExprCalc .  [EQU, NEQ]
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     '%'  shift, and goto state 51
     '*'  shift, and goto state 49
@@ -250,7 +250,7 @@ state 14 // ARRAYS ['%']
 
 state 15 // '-'
 
-   29 ExprCalc: '-' . ExprCalc  // assoc %left, prec 7
+   29 ExprCalc: '-' . ExprCalc  // assoc %left, prec 6
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -693,16 +693,16 @@ state 35 // '-' ARRAYS [$end]
 
 state 36 // '(' ARRAYS ['%']
 
-   14 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 4
-   15 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 4
-   16 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 4
-   17 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 4
+   14 ExprBool: ExprCalc . LSS ExprCalc  // assoc %left, prec 3
+   15 ExprBool: ExprCalc . LEQ ExprCalc  // assoc %left, prec 3
+   16 ExprBool: ExprCalc . GTR ExprCalc  // assoc %left, prec 3
+   17 ExprBool: ExprCalc . GEQ ExprCalc  // assoc %left, prec 3
    22 BoolCell: ExprCalc .  [EQU, NEQ]
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
    30 ExprCalc: '(' ExprCalc . ')'
 
     '%'  shift, and goto state 51
@@ -822,7 +822,7 @@ state 42 // FALSE AND FALSE [$end]
 
 state 43 // ARRAYS LSS
 
-   14 ExprBool: ExprCalc LSS . ExprCalc  // assoc %left, prec 4
+   14 ExprBool: ExprCalc LSS . ExprCalc  // assoc %left, prec 3
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -846,7 +846,7 @@ state 43 // ARRAYS LSS
 
 state 44 // ARRAYS LEQ
 
-   15 ExprBool: ExprCalc LEQ . ExprCalc  // assoc %left, prec 4
+   15 ExprBool: ExprCalc LEQ . ExprCalc  // assoc %left, prec 3
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -870,7 +870,7 @@ state 44 // ARRAYS LEQ
 
 state 45 // ARRAYS GTR
 
-   16 ExprBool: ExprCalc GTR . ExprCalc  // assoc %left, prec 4
+   16 ExprBool: ExprCalc GTR . ExprCalc  // assoc %left, prec 3
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -894,7 +894,7 @@ state 45 // ARRAYS GTR
 
 state 46 // ARRAYS GEQ
 
-   17 ExprBool: ExprCalc GEQ . ExprCalc  // assoc %left, prec 4
+   17 ExprBool: ExprCalc GEQ . ExprCalc  // assoc %left, prec 3
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -918,7 +918,7 @@ state 46 // ARRAYS GEQ
 
 state 47 // ARRAYS '+'
 
-   24 ExprCalc: ExprCalc '+' . ExprCalc  // assoc %left, prec 5
+   24 ExprCalc: ExprCalc '+' . ExprCalc  // assoc %left, prec 4
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -942,7 +942,7 @@ state 47 // ARRAYS '+'
 
 state 48 // ARRAYS '-'
 
-   25 ExprCalc: ExprCalc '-' . ExprCalc  // assoc %left, prec 5
+   25 ExprCalc: ExprCalc '-' . ExprCalc  // assoc %left, prec 4
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -966,7 +966,7 @@ state 48 // ARRAYS '-'
 
 state 49 // ARRAYS '*'
 
-   26 ExprCalc: ExprCalc '*' . ExprCalc  // assoc %left, prec 6
+   26 ExprCalc: ExprCalc '*' . ExprCalc  // assoc %left, prec 5
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -990,7 +990,7 @@ state 49 // ARRAYS '*'
 
 state 50 // ARRAYS '/'
 
-   27 ExprCalc: ExprCalc '/' . ExprCalc  // assoc %left, prec 6
+   27 ExprCalc: ExprCalc '/' . ExprCalc  // assoc %left, prec 5
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -1014,7 +1014,7 @@ state 50 // ARRAYS '/'
 
 state 51 // ARRAYS '%'
 
-   28 ExprCalc: ExprCalc '%' . ExprCalc  // assoc %left, prec 6
+   28 ExprCalc: ExprCalc '%' . ExprCalc  // assoc %left, prec 5
 
     '('     shift, and goto state 54
     '-'     shift, and goto state 15
@@ -1060,12 +1060,12 @@ state 52 // '(' ARRAYS ')'
 
 state 53 // ARRAYS '%' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc '%' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc '%' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
 
     $end  reduce using rule 28 (ExprCalc)
     '%'   reduce using rule 28 (ExprCalc)
@@ -1155,11 +1155,11 @@ state 56 // '-' IDENT [$end]
 
 state 57 // '-' '(' ARRAYS ['%']
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
    30 ExprCalc: '(' ExprCalc . ')'
 
     '%'  shift, and goto state 51
@@ -1171,12 +1171,12 @@ state 57 // '-' '(' ARRAYS ['%']
 
 state 58 // ARRAYS '/' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc '/' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc '/' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 27 (ExprCalc)
     '%'   reduce using rule 27 (ExprCalc)
@@ -1198,12 +1198,12 @@ state 58 // ARRAYS '/' ARRAYS [$end]
 
 state 59 // ARRAYS '*' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   26 ExprCalc: ExprCalc '*' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   26 ExprCalc: ExprCalc '*' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 26 (ExprCalc)
     '%'   reduce using rule 26 (ExprCalc)
@@ -1225,12 +1225,12 @@ state 59 // ARRAYS '*' ARRAYS [$end]
 
 state 60 // ARRAYS '-' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc '-' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc '-' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 25 (ExprCalc)
     '%'   shift, and goto state 51
@@ -1252,12 +1252,12 @@ state 60 // ARRAYS '-' ARRAYS [$end]
 
 state 61 // ARRAYS '+' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   24 ExprCalc: ExprCalc '+' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   24 ExprCalc: ExprCalc '+' ExprCalc .  [$end, ')', '+', ',', '-', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 24 (ExprCalc)
     '%'   shift, and goto state 51
@@ -1279,12 +1279,12 @@ state 61 // ARRAYS '+' ARRAYS [$end]
 
 state 62 // ARRAYS GEQ ARRAYS [$end]
 
-   17 ExprBool: ExprCalc GEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   17 ExprBool: ExprCalc GEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 17 (ExprBool)
     '%'   shift, and goto state 51
@@ -1299,12 +1299,12 @@ state 62 // ARRAYS GEQ ARRAYS [$end]
 
 state 63 // ARRAYS GTR ARRAYS [$end]
 
-   16 ExprBool: ExprCalc GTR ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   16 ExprBool: ExprCalc GTR ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 16 (ExprBool)
     '%'   shift, and goto state 51
@@ -1319,12 +1319,12 @@ state 63 // ARRAYS GTR ARRAYS [$end]
 
 state 64 // ARRAYS LEQ ARRAYS [$end]
 
-   15 ExprBool: ExprCalc LEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   15 ExprBool: ExprCalc LEQ ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 15 (ExprBool)
     '%'   shift, and goto state 51
@@ -1339,12 +1339,12 @@ state 64 // ARRAYS LEQ ARRAYS [$end]
 
 state 65 // ARRAYS LSS ARRAYS [$end]
 
-   14 ExprBool: ExprCalc LSS ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 4
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   14 ExprBool: ExprCalc LSS ExprCalc .  [$end, ')', ']', AND, OR]  // assoc %left, prec 3
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 14 (ExprBool)
     '%'   shift, and goto state 51
@@ -1539,11 +1539,11 @@ state 80 // IDENT '(' FALSE [$end]
 state 81 // IDENT '(' ARRAYS [$end]
 
    22 BoolCell: ExprCalc .  [$end, ')', ',', ']', AND, OR]
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
 
     $end  reduce using rule 22 (BoolCell)
     '%'   shift, and goto state 51
@@ -1653,12 +1653,12 @@ state 87 // IDENT '(' ARRAYS ',' ARRAYS [')']
 
 state 88 // '-' ARRAYS [$end]
 
-   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 5
-   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 5
-   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 6
-   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 6
-   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 6
-   29 ExprCalc: '-' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 7
+   24 ExprCalc: ExprCalc . '+' ExprCalc  // assoc %left, prec 4
+   25 ExprCalc: ExprCalc . '-' ExprCalc  // assoc %left, prec 4
+   26 ExprCalc: ExprCalc . '*' ExprCalc  // assoc %left, prec 5
+   27 ExprCalc: ExprCalc . '/' ExprCalc  // assoc %left, prec 5
+   28 ExprCalc: ExprCalc . '%' ExprCalc  // assoc %left, prec 5
+   29 ExprCalc: '-' ExprCalc .  [$end, '%', ')', '*', '+', ',', '-', '/', ']', AND, EQU, GEQ, GTR, LEQ, LSS, NEQ, OR]  // assoc %left, prec 6
 
     $end  reduce using rule 29 (ExprCalc)
     '%'   reduce using rule 29 (ExprCalc)
