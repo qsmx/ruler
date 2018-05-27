@@ -241,14 +241,16 @@ func (r *node) Exec(dp *DataPackage) *node {
 			switch left.kind {
 			case reflect.Int:
 				if right.kind == reflect.Float64 {
-					left = nodeFromFloat("", float64(left.Value.(int)))
+					left.Value = float64(left.Value.(int))
 				} else {
-					right = nodeFromInt("", ConvertInt(right.Value))
+					right.Value = ConvertInt(right.Value)
 				}
 			case reflect.Float64:
-				right = nodeFromFloat("", ConvertFloat(right.Value))
+				right.Value = ConvertFloat(right.Value)
 			case reflect.String:
-				right = nodeFromString("", ConvertString(right.Value))
+				right.Value = ConvertString(right.Value)
+			default:
+				throwException(E_DATA_INVALID, "错误的数据类型: %T %s %T", left.Value, yySymNames[yyXLAT[r.op]], right.Value)
 			}
 		}
 

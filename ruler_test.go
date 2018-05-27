@@ -1,6 +1,9 @@
 package ruler
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 func TestHit(t *testing.T) {
 	data := map[string]interface{} {
@@ -23,9 +26,10 @@ func TestHit(t *testing.T) {
 	}
 
 	for _, ruler := range rulers {
-		if res, ok := Hit(ruler[0].(string), data); ok == ruler[1].(bool) {
+		if res, ok := Hit(ruler[0].(string), data); ok == ruler[1] {
 			if ok == false {
-				t.Log("Err: ", res)
+				fmt.Println("Err: ", ruler[0], "\nMessage:", res)
+				continue
 			}
 			if res == ruler[2] {
 				t.Log(ruler[0], "Ok")

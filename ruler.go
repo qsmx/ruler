@@ -39,7 +39,6 @@ func Hit0(src string, dp *DataPackage) (res interface{}, ok bool) {
 				fmt.Println(err)
 			}
 
-			fmt.Println(res)
 			ok = false
 		}
 	}()
