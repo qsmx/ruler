@@ -234,7 +234,7 @@ func (r *node) Exec(dp *DataPackage) *node {
 		r, v := r.node[0].Exec(dp), r.node[1].Exec(dp)
 		return nodeFromBool("", r.Value != v.Value)
 
-	case '+', '-', '*', '/', '%', BITAND, BITOR, LSS, LEQ, GTR, GEQ:
+	case '+', '-', '*', '/', '%', LSS, LEQ, GTR, GEQ:
 		left, right := r.node[0].Exec(dp), r.node[1].Exec(dp)
 
 		if left.kind != right.kind {
@@ -253,6 +253,10 @@ func (r *node) Exec(dp *DataPackage) *node {
 		}
 
 		return calc(r.op, left.Value, right.Value)
+
+	case BITAND, BITOR:
+		left, right := r.node[0].Exec(dp).Value, r.node[1].Exec(dp).Value
+		return calc(r.op, ConvertInt(left), ConvertInt(right))
 
 	case AND:
 		return nodeFromBool("", ConvertBool(r.node[0].Exec(dp).Value) && ConvertBool(r.node[1].Exec(dp).Value))
@@ -280,11 +284,9 @@ func (r *node) Exec(dp *DataPackage) *node {
 		}
 
 	case FILTER:
-		fmt.Println(*r.node[0])
 		n := r.node[0]
 		name := n.Label
 		data := reflect.ValueOf(n.Exec(dp).Value)
-		fmt.Printf("data: %+v\n", data)
 		if data.Kind() != reflect.Slice {
 			throwException(500, "%s 不是数组数据，无法过滤", name)
 		}

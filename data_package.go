@@ -53,9 +53,19 @@ func NewDataPackage(data interface{}) (dp *DataPackage) {
 		throwException(E_DATA_INVALID, "不支持的数据类型 %T", data)
 	}
 
-	fmt.Printf("%+v\n", dp.data)
 	dp.stack[dp.pos] = dp.data
 	return
+}
+
+func (dp DataPackage) Clone() *DataPackage {
+	d := &DataPackage{
+		data: dp.data,
+		stack: make([]map[string]interface{}, DEFAULT_DATA_DEEP),
+		pos: 0,
+	}
+
+	d.stack[d.pos] = d.data
+	return d
 }
 
 func (dp DataPackage) GetDeepAttr(name string) (v interface{}, ok bool) {
@@ -90,7 +100,6 @@ func (dp DataPackage) GetAttr(key string) (interface{}, bool) {
 }
 
 func getAttr(key string, data map[string]interface{}) (v interface{}, ok bool) {
-	fmt.Println("key:", key, "data:", data)
 	v, ok = data[key]
 	return
 }
@@ -100,13 +109,13 @@ func (dp *DataPackage) Push(data interface{}) (ok bool) {
 
 	if v, ok = data.(map[string]interface{}); ok {
 		if dp.pos + 1 == DEFAULT_DATA_DEEP {
-			throwException(E_RULER_DATA_DEEP, "数据深度溢出")
+			throwException(E_RULER_DATA_DEEP, "数据栈深度溢出")
 		}
 
 		dp.pos++
 		dp.stack[dp.pos] = v
 	} else {
-		throwException(E_RULER_DATA_NOT_MATCH, "规则要求map, 但数据为 %T", data)
+		throwException(E_RULER_DATA_NOT_MATCH, "规则要求map[string]interface{}, 但数据为 %T", data)
 	}
 
 	return
